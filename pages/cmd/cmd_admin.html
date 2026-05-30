@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+<title>管理网络命令 - IT运维学习平台</title>
+<link rel="stylesheet" href="../../common.css?v=5">
+<style>
+.admin-table-wrap{border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg-white);box-shadow:var(--shadow-sm);overflow:hidden;margin-top:18px;transition:var(--transition-normal)}
+.admin-table-wrap:hover{box-shadow:var(--shadow-md)}
+#adminTbody tr{transition:var(--transition-fast)}
+#adminTbody tr:hover{background:var(--primary-light)}
+#adminTbody td{vertical-align:middle}
+.action-select{padding:6px 30px 6px 12px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;background:var(--bg-white);color:var(--text);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:var(--transition-fast)}
+.action-select:hover{border-color:var(--primary)}
+.action-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.batch-bar{align-items:center;gap:14px;padding:14px 20px;background:var(--danger-light);border:1.5px solid #fecaca;font-size:15px;font-weight:500;color:var(--danger);animation:fadeInUp .25s ease;position:fixed;bottom:0;left:240px;right:0;z-index:1000;display:none}
+.batch-bar .selected-count{flex:1}
+.no-result{text-align:center;padding:60px 20px 80px;color:#94a3b8;font-size:16px}
+.no-result svg{margin-bottom:16px;opacity:.4}
+.page{padding-bottom:70px}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+<div class="logo"><h1><svg width="36" height="36" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#1a73e8"/><path d="M6 9h16M6 14h12M6 19h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="21" cy="19" r="4" fill="#34d399"/><path d="M19.5 19h3M21 17.5v3" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/></svg><span>IT运维学习平台</span></h1></div>
+<div class="nav-group">
+<div class="nav-label"></div>
+<div class="nav-dropdown open">
+<button class="nav-dropdown-toggle active"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span>网络命令</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='cmd_list.html'"><span>命令列表</span></button>
+<button class="nav-btn active" onclick="location.href='cmd_admin.html'"><span>管理命令</span></button>
+<button class="nav-btn" onclick="location.href='cmd_add.html'"><span>添加命令</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14"/><circle cx="8" cy="8" r="2.5"/><path d="M3 3l2 2M11 3l2 2M3 13l2-2M11 13l2-2" opacity="0.5"/></svg><span>网络故障</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../fault/fault_list.html'"><span>故障列表</span></button>
+<button class="nav-btn" onclick="location.href='../fault/fault_admin.html'"><span>管理故障</span></button>
+<button class="nav-btn" onclick="location.href='../fault/fault_add.html'"><span>添加故障</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 8h4M5 10h5"/></svg><span>桌面运维</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../desktop/desktop_list.html'"><span>桌面列表</span></button>
+<button class="nav-btn" onclick="location.href='../desktop/desktop_admin.html'"><span>管理桌面</span></button>
+<button class="nav-btn" onclick="location.href='../desktop/desktop_add.html'"><span>添加桌面</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 3h8l1 3-3 4 3 4-1 3H4l-1-3 3-4-3-4Z"/></svg><span>Linux</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../linux/linux_list.html'"><span>Linux列表</span></button>
+<button class="nav-btn" onclick="location.href='../linux/linux_admin.html'"><span>管理Linux</span></button>
+<button class="nav-btn" onclick="location.href='../linux/linux_add.html'"><span>添加Linux</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8l2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M8 2v5l2-1 2 1V2"/></svg><span>Office</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../office/office_list.html'"><span>Office列表</span></button>
+<button class="nav-btn" onclick="location.href='../office/office_admin.html'"><span>管理Office</span></button>
+<button class="nav-btn" onclick="location.href='../office/office_add.html'"><span>添加Office</span></button>
+</div>
+</div>
+</div>
+<div class="sidebar-footer"><kbd>ESC</kbd> 返回 | <kbd>Ctrl+K</kbd> 搜索</div>
+</nav>
+
+<div class="main-wrap">
+<div class="page">
+<div class="top-bar">
+<h2>管理网络命令</h2>
+<div class="top-actions"><span id="statsLabel" class="stats-label" style="font-size:15px;color:var(--text-muted);font-weight:500">共0条</span></div>
+</div>
+<div class="search-row" style="position:relative">
+<input type="text" id="searchInput" placeholder="搜索网络命令..." autocomplete="off">
+<select id="vendorFilter"><option value="">全部厂商</option></select>
+<select id="catFilter"><option value="">全部分类</option></select>
+</div>
+<div id="noResult" class="no-result" style="display:none">
+<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><br>没有匹配的结果
+</div>
+<div class="admin-table-wrap">
+<table class="data-table">
+<thead><tr>
+<th style="width:40px"><input type="checkbox" id="selectAll"></th>
+<th style="width:60px">序号</th>
+<th>标题</th>
+<th>厂商</th><th>分类</th>
+<th style="width:120px">创建时间</th>
+<th style="width:180px">操作</th>
+</tr></thead>
+<tbody id="adminTbody"></tbody>
+</table>
+</div>
+<div class="batch-bar" id="batchBar" style="display:none">
+<span class="selected-count" id="selectedCount">已选择 0 项</span>
+<button class="btn btn-danger" onclick="_batchDelete()">删除（删除选择的）</button>
+</div>
+</div>
+</div>
+<script src="../../common.js?v=5"></script>
+<script>
+var _deleteIds = new Set();
+
+function _getVendorName(k){ return VENDOR_MAP && VENDOR_MAP[k] ? VENDOR_MAP[k].n : k; }
+function _getVendorColor(k){ return VENDOR_MAP && VENDOR_MAP[k] ? VENDOR_MAP[k].c : '#666'; }
+function _getCatLabel(k){ return (catLabels||{})[k] || (CAT_MAP||{})[k] || k; }
+function _esc(s){ if(!s) return ''; var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function _handleAction(sel, id){
+ var action=sel.value;
+ sel.value='';
+ if(action==='view') location.href='cmd_detail.html?id='+id;
+ else if(action==='edit') location.href='cmd_edit.html?id='+id;
+ else if(action==='delete') _deleteItem(id);
+}
+
+function _renderTable(data){
+ var s=document.getElementById('searchInput').value.trim().toLowerCase();
+ var vf=document.getElementById("vendorFilter");
+ var activeV=vf ? vf.value : '';
+ var cf=document.getElementById("catFilter");
+ var activeC=cf ? cf.value : '';
+ var list=data;
+ if(activeV) list=list.filter(function(t){
+  return t.configs && t.configs.some(function(cfg){return cfg.vendor===activeV;});
+ });
+ if(activeC) list=list.filter(function(t){return t.cat===activeC;});
+ if(s) list=list.filter(function(t){
+  return (t.title||'').toLowerCase().indexOf(s)!==-1 || ((t.desc||'').toLowerCase().indexOf(s)!==-1);
+ });
+ var tbody=document.getElementById('adminTbody');
+ var no=document.getElementById('noResult');
+ document.getElementById('statsLabel').textContent='共'+list.length+'条';
+ if(list.length===0){ tbody.innerHTML=''; no.style.display='block'; return; }
+ no.style.display='none';
+ var html='';
+ for(var i=0;i<list.length;i++){
+  var t=list[i];
+  var vendorBadges='';
+  if(t.configs&&t.configs.length){
+   vendorBadges=t.configs.map(function(cfg){
+    var vc=_getVendorColor(cfg.vendor);
+    return '<span style="display:inline-block;padding:2px 8px;margin:1px 3px;border-radius:10px;font-size:11px;background:'+vc+'15;color:'+vc+';border:1px solid '+vc+'40">'+_getVendorName(cfg.vendor)+'</span>';
+   }).join('');
+  }
+  html+='<tr><td><input type="checkbox" class="select-item" value="'+t.id+'" '+(_deleteIds.has(t.id)?'checked':'')+' onchange="_toggleItem(this)"></td>';
+  html+='<td>'+(i+1)+'</td><td>'+_esc(t.title)+'</td>';
+  html+='<td>'+vendorBadges+'</td>';
+  html+='<td>'+_getCatLabel(t.cat)+'</td>';
+  html+='<td>'+(t.created_at||'')+'</td>';
+  html+='<td><select class="action-select" onchange="_handleAction(this,\''+t.id+'\')"><option value="">操作</option><option value="view">查看</option><option value="edit">编辑</option><option value="delete">删除</option></select></td></tr>';
+ }
+ tbody.innerHTML=html;
+}
+
+function _toggleSelectAll(){
+ var cb=document.getElementById('selectAll');
+ var items=document.querySelectorAll('.select-item');
+ for(var i=0;i<items.length;i++){
+  items[i].checked=cb.checked;
+  if(cb.checked) _deleteIds.add(items[i].value); else _deleteIds.delete(items[i].value);
+ }
+ _updateBatchBar();
+}
+function _toggleItem(cb){
+ if(cb.checked) _deleteIds.add(cb.value); else _deleteIds.delete(cb.value);
+ _updateBatchBar();
+}
+function _updateBatchBar(){
+ var el=document.getElementById('batchBar');
+ var cnt=_deleteIds.size;
+ el.style.display=cnt?'flex':'none';
+ document.getElementById('selectedCount').textContent='已选择 '+cnt+' 项';
+}
+
+async function _deleteItem(id){
+ if(!confirm('确定要删除这条命令吗？')) return;
+ try{
+  var res=await fetch('/api/topics/'+encodeURIComponent(id),{method:'DELETE'});
+  if(!res.ok) throw new Error();
+  _deleteIds.delete(id);
+  _loadDataAndRender();
+ }catch(e){ alert('删除失败，请重试'); }
+}
+
+async function _batchDelete(){
+ if(_deleteIds.size===0){ alert('请先勾选要删除的项目'); return; }
+ if(!confirm('确定要删除已选择的 '+_deleteIds.size+' 项吗？此操作不可撤销！')) return;
+ try{
+  var ids=[];
+  _deleteIds.forEach(function(v){ids.push(v);});
+  var res=await fetch('/api/topics/batch-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:ids})});
+  if(!res.ok) throw new Error();
+  _deleteIds.clear();
+  _loadDataAndRender();
+  _updateBatchBar();
+ }catch(e){ alert('批量删除失败，请重试'); }
+}
+
+var _cmdData = [];
+async function _loadDataAndRender(){
+ try{
+  var r=await fetch('/api/topics');
+  if(!r.ok) throw new Error('API error');
+  _cmdData=await r.json();
+  _renderTable(_cmdData);
+ }catch(e){ console.error('加载失败:',e); document.getElementById('adminTbody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8">数据加载失败，请刷新重试</td></tr>'; }
+}
+
+function _initVendorFilter(){
+ var vf=document.getElementById('vendorFilter');
+ if(!vf) return;
+ if(typeof VENDOR_MAP==='undefined'){ setTimeout(_initVendorFilter,100); return; }
+ var keys=Object.keys(VENDOR_MAP);
+ for(var i=0;i<keys.length;i++){
+  var k=keys[i]; var v=VENDOR_MAP[k];
+  var o=document.createElement('option'); o.value=k; o.textContent=v.n; vf.appendChild(o);
+ }
+ vf.addEventListener('change',function(){ _deleteIds.clear(); _updateBatchBar(); _renderTable(_cmdData); });
+}
+
+function _initCatFilter(){
+ var cf=document.getElementById('catFilter');
+ if(!cf) return;
+ if(typeof CAT_MAP==='undefined'){ setTimeout(_initCatFilter,100); return; }
+ var catKeys=Object.keys(CAT_MAP);
+ for(var i=0;i<catKeys.length;i++){
+  var ck=catKeys[i];
+  var o=document.createElement('option'); o.value=ck; o.textContent=_getCatLabel(ck); cf.appendChild(o);
+ }
+ cf.addEventListener('change',function(){ _deleteIds.clear(); _updateBatchBar(); _renderTable(_cmdData); });
+}
+
+document.addEventListener('DOMContentLoaded',async function(){
+ _initVendorFilter();
+ _initCatFilter();
+ document.getElementById('searchInput').addEventListener('input',function(){_renderTable(_cmdData);});
+ document.getElementById('selectAll').addEventListener('change',_toggleSelectAll);
+ if(window.initSidebarDropdowns) window.initSidebarDropdowns();
+ await _loadDataAndRender();
+});
+</script>
+</body>
+</html>

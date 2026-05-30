@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+<title>添加网络命令 - IT运维学习平台</title>
+<link rel="stylesheet" href="../../common.css?v=2">
+</head>
+<body>
+<nav class="sidebar">
+<div class="logo"><h1><svg width="36" height="36" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="#1a73e8"/><path d="M6 9h16M6 14h12M6 19h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="21" cy="19" r="4" fill="#34d399"/><path d="M19.5 19h3M21 17.5v3" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/></svg><span>IT运维学习平台</span></h1></div>
+<div class="nav-group">
+<div class="nav-label"></div>
+<div class="nav-dropdown open">
+<button class="nav-dropdown-toggle active"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span>网络命令</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='cmd_list.html'"><span>命令列表</span></button>
+<button class="nav-btn" onclick="location.href='cmd_admin.html'"><span>管理命令</span></button>
+<button class="nav-btn active" onclick="location.href='cmd_add.html'"><span>添加命令</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14"/><circle cx="8" cy="8" r="2.5"/><path d="M3 3l2 2M11 3l2 2M3 13l2-2M11 13l2-2" opacity="0.5"/></svg><span>网络故障</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../fault/fault_list.html'"><span>故障列表</span></button>
+<button class="nav-btn" onclick="location.href='../fault/fault_admin.html'"><span>管理故障</span></button>
+<button class="nav-btn" onclick="location.href='../fault/fault_add.html'"><span>添加故障</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 8h4M5 10h5"/></svg><span>桌面运维</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../desktop/desktop_list.html'"><span>桌面列表</span></button>
+<button class="nav-btn" onclick="location.href='../desktop/desktop_admin.html'"><span>管理桌面</span></button>
+<button class="nav-btn" onclick="location.href='../desktop/desktop_add.html'"><span>添加桌面</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 3h8l1 3-3 4 3 4-1 3H4l-1-3 3-4-3-4Z"/></svg><span>Linux</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../linux/linux_list.html'"><span>Linux列表</span></button>
+<button class="nav-btn" onclick="location.href='../linux/linux_admin.html'"><span>管理Linux</span></button>
+<button class="nav-btn" onclick="location.href='../linux/linux_add.html'"><span>添加Linux</span></button>
+</div>
+</div>
+<div class="nav-dropdown">
+<button class="nav-dropdown-toggle"><svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8l2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M8 2v5l2-1 2 1V2"/></svg><span>Office</span><svg class="nav-dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg></button>
+<div class="nav-dropdown-menu">
+<button class="nav-btn" onclick="location.href='../office/office_list.html'"><span>Office列表</span></button>
+<button class="nav-btn" onclick="location.href='../office/office_admin.html'"><span>管理Office</span></button>
+<button class="nav-btn" onclick="location.href='../office/office_add.html'"><span>添加Office</span></button>
+</div>
+</div>
+</div>
+<div class="sidebar-footer"><kbd>ESC</kbd> 返回 | <kbd>Ctrl+K</kbd> 搜索</div>
+</nav>
+
+<div class="main-wrap">
+<div class="page">
+<div class="detail-page">
+<div class="top-bar">
+<h2>添加网络命令</h2>
+<div class="top-actions">
+<button class="btn btn-outline" onclick="location.href='cmd_admin.html'">返回管理</button>
+</div>
+</div>
+<div class="form-card">
+<div class="form-group">
+<label>标题 <span class="required">*</span></label>
+<input type="text" id="addTitle" placeholder="请输入标题">
+</div>
+<div class="form-group"><label>分类</label><select id="addCat"></select></div>
+<div class="form-group"><label>描述</label><textarea id="addDesc" rows="3" placeholder="请输入描述"></textarea></div>
+<div class="form-group"><label>详细内容</label><textarea id="addDetail" rows="8" placeholder="请输入详细内容"></textarea></div>
+
+<div class="form-group">
+<label>厂商配置</label>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+<select id="vendorSelect"><option value="">选择厂商...</option></select>
+<button class="btn btn-primary" onclick="addVendorCard()" style="padding:6px 16px;font-size:13px;white-space:nowrap">+ 添加厂商</button>
+</div>
+<div id="vendorCards"></div>
+</div>
+
+<div class="form-actions">
+<button class="btn btn-primary" onclick="submitAdd()">保存</button>
+<button class="btn btn-outline" onclick="location.href='cmd_admin.html'">取消</button>
+</div>
+</div>
+</div>
+</div>
+<script src="../../common.js?v=2"></script>
+<script>
+var addedVendors = {};
+
+function _getVendorColor(k){ return VENDOR_MAP && VENDOR_MAP[k] ? VENDOR_MAP[k].c : '#666'; }
+function _getVendorName(k){ return VENDOR_MAP && VENDOR_MAP[k] ? VENDOR_MAP[k].n : k; }
+
+function initForm(){
+ var vs=document.getElementById('vendorSelect');
+ if(!vs) return;
+ if(typeof VENDOR_MAP==='undefined'){ setTimeout(initForm,100); return; }
+ Object.keys(VENDOR_MAP).forEach(function(k){
+  var o=document.createElement('option'); o.value=k; o.textContent=VENDOR_MAP[k].n; vs.appendChild(o);
+ });
+ var cs=document.getElementById('addCat');
+ if(cs){
+  Object.keys(CAT_MAP).forEach(function(k){
+   var o=document.createElement('option'); o.value=k; o.textContent=CAT_MAP[k]; cs.appendChild(o);
+  });
+ }
+}
+
+function addVendorCard(){
+ var vs=document.getElementById('vendorSelect');
+ var vk=vs.value;
+ if(!vk) return;
+ if(addedVendors[vk]){ showToast('该厂商已添加'); return; }
+ addedVendors[vk]=true;
+ var container=document.getElementById('vendorCards');
+ var vn=_getVendorName(vk);
+ var vc=_getVendorColor(vk);
+ var card=document.createElement('div');
+ card.id='vendorCard_'+vk;
+ card.style.cssText='border:1.5px solid '+vc+'40;border-radius:8px;padding:16px;margin-bottom:12px;background:'+vc+'08';
+ card.innerHTML=
+  '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+  '<span style="font-weight:600;color:'+vc+';font-size:16px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+vc+';margin-right:8px;vertical-align:middle"></span>'+vn+'</span>'+
+  '<button onclick="removeVendorCard(\''+vk+'\')" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:18px;line-height:1">&times;</button></div>'+
+  '<div style="margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px;font-size:13px;color:var(--text)">配置命令</div><textarea class="vendor-'+vk+'-config" rows="6" placeholder="输入'+vn+'的配置命令..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:15px;outline:none;font-family:\'Cascadia Code\',\'Fira Code\',Consolas,monospace;line-height:1.6;resize:vertical;box-sizing:border-box"></textarea></div>'+
+  '<div style="margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px;font-size:13px;color:var(--text)">配置说明</div><textarea class="vendor-'+vk+'-comment" rows="3" placeholder="输入'+vn+'的配置说明..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:15px;outline:none;font-family:inherit;line-height:1.6;resize:vertical;box-sizing:border-box"></textarea></div>'+
+  '<div style="margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px;font-size:13px;color:var(--text)">参考文档URL</div><input class="vendor-'+vk+'-doc" type="url" placeholder="https://..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:15px;outline:none;font-family:inherit;box-sizing:border-box"></div>'+
+  '<div><div style="font-weight:600;margin-bottom:4px;font-size:13px;color:var(--text)">验证命令</div><textarea class="vendor-'+vk+'-verify" rows="4" placeholder="输入'+vn+'的验证命令..." style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:15px;outline:none;font-family:\'Cascadia Code\',\'Fira Code\',Consolas,monospace;line-height:1.6;resize:vertical;box-sizing:border-box"></textarea></div>';
+ container.appendChild(card);
+ vs.value='';
+}
+
+function removeVendorCard(vk){
+ delete addedVendors[vk];
+ var card=document.getElementById('vendorCard_'+vk);
+ if(card) card.remove();
+}
+
+function collectConfigs(){
+ var configs=[];
+ Object.keys(addedVendors).forEach(function(vk){
+  var configEl=document.querySelector('.vendor-'+vk+'-config');
+  var cmtEl=document.querySelector('.vendor-'+vk+'-comment');
+  var docEl=document.querySelector('.vendor-'+vk+'-doc');
+  var verifyEl=document.querySelector('.vendor-'+vk+'-verify');
+  var config=configEl?configEl.value.trim():'';
+  var comment=cmtEl?cmtEl.value.trim():'';
+  var doc=docEl?docEl.value.trim():'';
+  var verifyCmd=verifyEl?verifyEl.value.trim():'';
+  configs.push({vendor:vk,config:config,comment:comment,doc:doc,verification_cmd:verifyCmd,verification_images:[]});
+ });
+ return configs;
+}
+
+async function submitAdd(){
+ var title=document.getElementById('addTitle').value.trim();
+ if(!title){showToast('请输入标题');return;}
+ var cat=document.getElementById('addCat')?document.getElementById('addCat').value:'';
+ var desc=document.getElementById('addDesc')?document.getElementById('addDesc').value:'';
+ var detail=document.getElementById('addDetail')?document.getElementById('addDetail').value:'';
+ var configs=collectConfigs();
+ try{
+  var res=await fetch('/api/topics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,cat:cat,desc:desc,detail:detail,configs:configs})});
+  if(!res.ok){ var err=await res.text(); try{var ej=JSON.parse(err);showToast(ej.error||'保存失败');}catch(e2){showToast('保存失败');} return; }
+  showToast('保存成功');
+  setTimeout(function(){location.href='cmd_admin.html';},800);
+ }catch(e){showToast('保存失败');}
+}
+
+document.addEventListener('DOMContentLoaded',async function(){initForm();if(window.initSidebarDropdowns) window.initSidebarDropdowns();});
+</script>
+</body>
+</html>

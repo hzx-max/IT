@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>诊断 - 网络命令加载测试</title>
+<link rel="stylesheet" href="../../common.css?v=4">
+</head>
+<body style="padding:40px;">
+<h1>网络命令 API 诊断</h1>
+<div id="status" style="margin:20px 0;font-size:18px;font-weight:bold;">检测中...</div>
+<div id="detail" style="white-space:pre-wrap;font-family:monospace;background:#f8f9fa;padding:20px;border-radius:8px;"></div>
+<script src="../../common.js?v=4"></script>
+<script>
+var out=document.getElementById('detail');
+var statusEl=document.getElementById('status');
+function log(s){ out.textContent += s + '\n'; }
+
+log('[1] 检查 VENDOR_MAP 是否存在...');
+log(typeof VENDOR_MAP !== 'undefined' ? '  OK: VENDOR_MAP 存在，包含 '+Object.keys(VENDOR_MAP).length+' 个厂商' : '  FAIL: VENDOR_MAP 不存在');
+
+log('[2] 检查 CAT_MAP 是否存在...');
+log(typeof CAT_MAP !== 'undefined' ? '  OK: CAT_MAP 存在，包含 '+Object.keys(CAT_MAP).length+' 个分类' : '  FAIL: CAT_MAP 不存在');
+
+log('[3] 发起 API 请求...');
+fetch('/api/topics')
+.then(function(r){
+  log('  HTTP 状态码: ' + r.status);
+  log('  Content-Type: ' + r.headers.get('Content-Type'));
+  return r.json();
+})
+.then(function(data){
+  statusEl.textContent = '✓ 加载成功！共 ' + data.length + ' 条主题';
+  statusEl.style.color = '#16a34a';
+  log('[4] 数据解析成功，共 ' + data.length + ' 条');
+  if(data.length>0){
+    log('[5] 第1条数据:');
+    log('    id=' + data[0].id + ', title=' + data[0].title + ', cat=' + data[0].cat);
+    if(data[0].configs && data[0].configs.length){
+      log('    configs: ' + data[0].configs.length + ' 个厂商配置');
+    }
+  }
+  log('[6] 所有测试通过!');
+})
+.catch(function(e){
+  statusEl.textContent = '✗ 加载失败';
+  statusEl.style.color = '#dc2626';
+  log('  ERROR: ' + e.message);
+});
+</script>
+</body>
+</html>
