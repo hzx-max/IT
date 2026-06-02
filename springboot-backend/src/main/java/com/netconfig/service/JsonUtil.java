@@ -44,8 +44,21 @@ public final class JsonUtil {
         }
     }
 
+    public static List<String> toStringList(String json) {
+        if (json == null || json.isBlank()) return Collections.emptyList();
+        try {
+            return MAPPER.readValue(json, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            return Collections.emptyList();
+        }
+    }
+
     private static final DateTimeFormatter UTC_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter LOCAL_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public static String nowLocal() {
+        return LocalDateTime.now().format(LOCAL_FMT);
+    }
 
     public static String utcToLocal(String utcStr) {
         if (utcStr == null || utcStr.isBlank()) return utcStr;
@@ -54,7 +67,6 @@ public final class JsonUtil {
             ZonedDateTime local = utc.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault());
             return local.format(LOCAL_FMT);
         } catch (DateTimeParseException e) {
-            if (utcStr.length() == 16 && utcStr.charAt(10) == ' ') return utcStr;
             return utcStr;
         }
     }

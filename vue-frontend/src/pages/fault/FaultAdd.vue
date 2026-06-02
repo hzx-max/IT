@@ -1,0 +1,219 @@
+<template>
+  <MainLayout>
+    <div class="max-w-[720px] mx-auto">
+      <div class="top-bar">
+        <h2>添加故障</h2>
+      </div>
+
+      <div class="form-card">
+        <div class="form-group">
+          <label>标题 <span class="text-red-600">*</span></label>
+          <input v-model="form.title" placeholder="输入故障标题" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>分类 <span class="text-red-600">*</span></label>
+          <ComboBox v-model="form.category" :options="catOptions" placeholder="选择或输入分类" manageable
+            @add-cat="onAddCat" @edit-cat="onEditCat" @delete-cat="onDeleteCat" />
+        </div>
+
+        <div class="form-group">
+          <label>图片/视频</label>
+          <div class="upload-area" @click="triggerMediaInput" @dragover.prevent @drop.prevent="onMediaDrop">
+            <input type="file" ref="mediaInput" accept="image/*,video/*" multiple @change="onMediaSelected" class="hidden-input">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span class="upload-text">点击或拖拽上传图片/视频</span>
+          </div>
+          <div v-if="mediaItems.length > 0" class="preview-grid">
+            <div v-for="(item, idx) in mediaItems" :key="idx" class="preview-item">
+              <img v-if="item.type === 'image'" :src="item.url" class="preview-img">
+              <video v-else :src="item.url" class="preview-video" controls></video>
+              <button class="preview-remove" @click="removeMedia(idx)">&times;</button>
+            </div>
+          </div>
+          <div v-if="uploading" class="mt-2 text-sm text-blue-600">上传中...</div>
+        </div>
+
+        <div class="form-group">
+          <label>故障现象</label>
+          <textarea v-model="form.symptom" rows="3" placeholder="描述故障现象" class="form-input"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>故障原因</label>
+          <textarea v-model="form.cause" rows="3" placeholder="分析故障原因" class="form-input"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>解决方案</label>
+          <textarea v-model="form.solution" rows="5" placeholder="描述解决方案" class="form-input"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
+            {{ submitting ? '提交中...' : '保存' }}
+          </button>
+          <button class="btn btn-ghost" @click="$router.back()">取消</button>
+        </div>
+
+        <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">{{ error }}</div>
+        <div v-if="success" class="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-600 text-sm">{{ success }}</div>
+      </div>
+    </div>
+    <ModalDialog :visible="modal.visible" :message="modal.message" :type="modal.type" @confirm="onModalConfirm" @cancel="onModalCancel" />
+  </MainLayout>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import MainLayout from '../../layouts/MainLayout.vue'
+import ComboBox from '../../components/ComboBox.vue'
+import ModalDialog from '../../components/ModalDialog.vue'
+import { apiFaults, apiCategories, apiUpload } from '../../api/index.js'
+
+const DEFAULT_CATS = { '故障类': '故障类', '配置类': '配置类', '性能类': '性能类', '安全类': '安全类', '硬件类': '硬件类' }
+
+const router = useRouter()
+const submitting = ref(false)
+const error = ref('')
+const success = ref('')
+
+const form = ref({ title: '', category: '', symptom: '', cause: '', solution: '' })
+
+const localCatMap = ref({ ...DEFAULT_CATS })
+const catOptions = computed(() => Object.entries(localCatMap.value).map(([k, v]) => ({ value: k, label: v })))
+const modal = ref({ visible: false, message: '', type: 'confirm', action: null })
+
+const mediaInput = ref(null)
+const mediaItems = ref([])
+const uploading = ref(false)
+
+function generateId() {
+  return 'fault_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)
+}
+
+function triggerMediaInput() { mediaInput.value?.click() }
+
+async function onMediaSelected(e) {
+  const files = Array.from(e.target.files || [])
+  if (files.length === 0) return
+  await uploadFiles(files)
+  e.target.value = ''
+}
+
+function onMediaDrop(e) {
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'))
+  if (files.length > 0) uploadFiles(files)
+}
+
+async function uploadFiles(files) {
+  uploading.value = true
+  try {
+    const res = await apiUpload.upload(files)
+    const uploadedItems = res.data.map(f => ({
+      url: f.url,
+      type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
+    }))
+    mediaItems.value.push(...uploadedItems)
+  } catch (e) {
+    error.value = '上传失败: ' + (e.response?.data?.msg || e.message)
+  } finally {
+    uploading.value = false
+  }
+}
+
+function removeMedia(idx) { mediaItems.value.splice(idx, 1) }
+
+async function onAddCat({ key, label }) {
+  try {
+    await apiCategories.save({ cat_key: key, cat_label: label })
+    localCatMap.value[key] = label
+  } catch (e) { console.error('添加分类失败:', e) }
+}
+
+async function onEditCat({ oldKey, key, label }) {
+  try {
+    if (oldKey !== key) await apiCategories.delete(oldKey)
+    await apiCategories.save({ cat_key: key, cat_label: label })
+    if (oldKey !== key) delete localCatMap.value[oldKey]
+    localCatMap.value[key] = label
+  } catch (e) { console.error('编辑分类失败:', e) }
+}
+
+async function onDeleteCat({ key }) {
+  try {
+    await apiCategories.delete(key)
+    delete localCatMap.value[key]
+    localCatMap.value = { ...localCatMap.value }
+  } catch (e) { console.error('删除分类失败:', e) }
+}
+
+async function onSubmit() {
+  if (!form.value.title || !form.value.category) {
+    error.value = '请填写标题和分类'
+    modal.value = { visible: true, message: '请填写标题和分类', type: 'confirm', action: 'alert' }
+    return
+  }
+  submitting.value = true
+  error.value = ''
+  success.value = ''
+  try {
+    await apiFaults.create({
+      id: generateId(),
+      title: form.value.title,
+      category: form.value.category,
+      symptom: form.value.symptom || '',
+      cause: form.value.cause || '',
+      solution: form.value.solution || '',
+      images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
+      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
+    })
+    success.value = '保存成功！'
+    setTimeout(() => router.push('/fault'), 1000)
+  } catch (e) {
+    error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
+  }
+  finally { submitting.value = false }
+}
+
+function onModalConfirm() { modal.value.visible = false; if (modal.value.action === 'ok') router.push('/fault') }
+function onModalCancel() { modal.value.visible = false }
+
+onMounted(async () => {
+  try {
+    const res = await apiCategories.list()
+    if (res.data && typeof res.data === 'object') {
+      Object.entries(res.data).forEach(([k, v]) => { localCatMap.value[k] = v })
+    }
+  } catch (e) { console.error('加载分类失败:', e) }
+})
+</script>
+
+<style scoped>
+.top-bar h2{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.3px;position:relative;padding-bottom:4px;margin-bottom:24px}
+.top-bar h2::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));border-radius:2px}
+.form-card{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-sm)}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:15px;outline:none;font-family:inherit;background:var(--bg-white);transition:var(--transition-normal)}
+.form-input:hover{border-color:#cbd5e1}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.upload-area{border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8}
+.upload-area:hover{border-color:#2563eb;color:#2563eb;background:#f8fafc}
+.upload-text{font-size:14px}
+.hidden-input{display:none}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px}
+.preview-item{position:relative;border-radius:6px;overflow:hidden;border:1.5px solid #e2e8f0;aspect-ratio:1}
+.preview-img{width:100%;height:100%;object-fit:cover}
+.preview-video{width:100%;height:100%;object-fit:cover}
+.preview-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.preview-remove:hover{background:rgba(220,38,38,.8)}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1.5px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;transition:all .25s ease;border:none}
+.btn-primary{background:#2563eb;color:#fff;box-shadow:0 1px 3px rgba(37,99,235,.3)}
+.btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 14px rgba(37,99,235,.35);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+.btn-ghost{background:var(--bg-white);color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+</style>

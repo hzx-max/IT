@@ -17,7 +17,7 @@ public class DesktopService {
     private final DesktopRepository desktopRepository;
 
     public List<DesktopDTO> findAll() {
-        return desktopRepository.findAll().stream()
+        return desktopRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -31,6 +31,7 @@ public class DesktopService {
     @Transactional
     public DesktopDTO create(DesktopDTO dto) {
         Desktop entity = toEntity(dto);
+        entity.setCreatedAt(JsonUtil.nowLocal());
         Desktop saved = desktopRepository.save(entity);
         return toDTO(saved);
     }
@@ -40,6 +41,7 @@ public class DesktopService {
         Desktop entity = desktopRepository.findById(id).orElse(null);
         if (entity == null) return null;
         updateEntity(entity, dto);
+        entity.setCreatedAt(JsonUtil.nowLocal());
         Desktop saved = desktopRepository.save(entity);
         return toDTO(saved);
     }
@@ -47,6 +49,11 @@ public class DesktopService {
     @Transactional
     public void delete(String id) {
         desktopRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void batchDelete(List<String> ids) {
+        desktopRepository.deleteAllById(ids);
     }
 
     private DesktopDTO toDTO(Desktop e) {
@@ -58,7 +65,9 @@ public class DesktopService {
         d.setSolution(e.getSolution());
         d.setTopo(JsonUtil.toList(e.getTopo()));
         d.setDocs(JsonUtil.toMap(e.getDocs()));
-        d.setCreatedAt(JsonUtil.utcToLocal(e.getCreatedAt()));
+        d.setImages(JsonUtil.toStringList(e.getImages()));
+        d.setVideos(JsonUtil.toStringList(e.getVideos()));
+        d.setCreatedAt(e.getCreatedAt());
         return d;
     }
 
@@ -76,5 +85,7 @@ public class DesktopService {
         e.setSolution(d.getSolution() != null ? d.getSolution() : "");
         e.setTopo(JsonUtil.toJson(d.getTopo()));
         e.setDocs(JsonUtil.toJson(d.getDocs()));
+        e.setImages(JsonUtil.toJson(d.getImages()));
+        e.setVideos(JsonUtil.toJson(d.getVideos()));
     }
 }

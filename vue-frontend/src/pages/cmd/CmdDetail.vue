@@ -1,0 +1,158 @@
+<template>
+  <MainLayout>
+    <div class="max-w-[960px] mx-auto export-pdf-area">
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <h2 class="text-[26px] font-bold">{{ item?.title || '加载中...' }}</h2>
+        <div class="flex gap-2.5 flex-wrap items-center">
+          <button class="btn btn-primary text-sm" @click="$router.push('/cmd/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
+          <button class="btn btn-ghost text-sm" @click="$router.back()">← 返回</button>
+        </div>
+      </div>
+
+      <template v-if="loading">
+        <div class="text-center py-20 text-slate-400"><div class="w-9 h-9 mx-auto mb-4 border-3 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>加载中...</div>
+      </template>
+      <template v-else-if="error">
+        <div class="text-center py-20 text-red-500">{{ error }}</div>
+      </template>
+      <template v-else-if="item">
+        <div v-if="item?.desc" class="detail-section"><div class="detail-label">描述</div><div class="detail-value">{{ item.desc }}</div></div>
+
+        <div v-if="configs.length > 0" class="detail-section">
+          <div class="detail-label mb-3">厂商配置</div>
+          <div class="flex gap-1.5 flex-wrap mb-[18px]">
+            <button v-for="(cfg,i) in configs" :key="cfg.vendor"
+              class="vendor-tab" :class="{ active: activeConfig === i }"
+              :style="activeConfig === i ? { background: getVendorColor(cfg.vendor, VENDOR_MAP), borderColor: getVendorColor(cfg.vendor, VENDOR_MAP), color: '#fff' } : {}"
+              @click="activeConfig = i">
+              <span class="inline-block w-[10px] h-[10px] rounded-full mr-1.5 align-middle" :style="{ background: getVendorColor(cfg.vendor, VENDOR_MAP) }"></span>
+              {{ getVendorName(cfg.vendor, VENDOR_MAP) }}
+            </button>
+          </div>
+          <div v-for="(cfg,i) in configs" :key="cfg.vendor" v-show="activeConfig === i">
+            <div v-if="cfg.config" class="mb-4">
+              <div class="font-semibold text-sm text-slate-700 mb-2">配置命令</div>
+              <pre class="code-block">{{ cfg.config }}</pre>
+            </div>
+            <div v-if="cfg.comment" class="mb-3 px-3.5 py-2.5 rounded-md bg-blue-50 text-blue-600 text-sm"><strong>配置说明：</strong>{{ cfg.comment }}</div>
+            <div v-if="cfg.doc" class="mb-3 text-sm"><strong>参考文档：</strong><a :href="cfg.doc" target="_blank" class="text-blue-600 no-underline hover:underline">{{ cfg.doc }}</a></div>
+            <div v-if="cfg.verificationCmd">
+              <div class="font-semibold text-sm text-slate-700 mb-2">验证命令</div>
+              <pre class="code-block">{{ cfg.verificationCmd }}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="item?.detail" class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail }}</div></div>
+
+        <div class="detail-section">
+          <div class="detail-label mb-2">学习笔记</div>
+          <textarea v-model="noteContent" class="w-full px-3.5 py-[11px] border border-slate-200 rounded-md text-sm outline-none font-inherit resize-y transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(37,99,235,.12)]" rows="4" placeholder="在此记录你的学习笔记..."></textarea>
+          <div class="mt-2 flex gap-2 items-center justify-end">
+            <span class="text-sm text-slate-500">{{ noteStatus }}</span>
+            <button class="btn btn-primary text-xs !py-1.5 !px-4" @click="saveNote">保存笔记</button>
+          </div>
+        </div>
+
+        <div class="detail-footer">
+          <span v-if="item?.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+          <span v-for="cfg in configs" :key="cfg.vendor" class="tag-vendor" :style="{ background: getVendorColor(cfg.vendor, VENDOR_MAP)+'15', color: getVendorColor(cfg.vendor, VENDOR_MAP), borderColor: getVendorColor(cfg.vendor, VENDOR_MAP)+'40' }">{{ getVendorName(cfg.vendor, VENDOR_MAP) }}</span>
+          <span v-if="item?.cat" class="tag-cat">{{ getCatLabel(item.cat, CAT_MAP) }}</span>
+        </div>
+      </template>
+    </div>
+  </MainLayout>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import MainLayout from '../../layouts/MainLayout.vue'
+import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiTopics, apiNotes } from '../../api/index.js'
+
+const route = useRoute()
+const item = ref(null)
+const loading = ref(true)
+const error = ref('')
+const activeConfig = ref(0)
+const noteContent = ref('')
+const noteStatus = ref('')
+
+const configs = computed(() => {
+  if (!item.value?.configs) return []
+  const arr = typeof item.value.configs === 'string' ? JSON.parse(item.value.configs) : item.value.configs
+  return (Array.isArray(arr) ? arr : []).sort((a, b) => {
+    const keys = Object.keys(VENDOR_MAP)
+    return keys.indexOf(a.vendor) - keys.indexOf(b.vendor)
+  })
+})
+
+function loadHtml2Pdf() {
+  return new Promise((resolve, reject) => {
+    if (window.html2pdf) { resolve(); return }
+    const s = document.createElement('script')
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+    s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
+  })
+}
+
+async function exportPDF() {
+  const btn = document.querySelector('.btn-pdf')
+  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
+  try {
+    await loadHtml2Pdf()
+    const el = document.querySelector('.export-pdf-area')
+    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
+    await window.html2pdf().set(opt).from(el).save()
+  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
+  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+}
+
+async function loadNote() {
+  try {
+    const res = await apiNotes.get(route.params.id)
+    if (res.data?.content) { noteContent.value = res.data.content; noteStatus.value = '上次保存: ' + new Date().toLocaleString() }
+  } catch {}
+}
+
+async function saveNote() {
+  try {
+    await apiNotes.save(route.params.id, noteContent.value)
+    noteStatus.value = '已保存 ' + new Date().toLocaleString()
+  } catch { alert('保存失败') }
+}
+
+onMounted(async () => {
+  try {
+    const res = await apiTopics.get(route.params.id)
+    item.value = res.data
+    if (item.value) {
+      document.title = item.value.title + ' - IT运维学习平台'
+      loadNote()
+    }
+  } catch (e) { error.value = '加载失败: ' + e.message }
+  finally { loading.value = false }
+})
+</script>
+
+<style scoped>
+.detail-section{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
+.detail-section:hover{box-shadow:var(--shadow-md)}
+.detail-label{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-value{font-size:16px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.detail-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.tag-time{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f0f9ff;color:#2563eb;border:1.5px solid #bfdbfe;display:inline-block}
+.tag-vendor{display:inline-block;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:500;border:1.5px solid}
+.tag-cat{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}
+.vendor-tab{padding:8px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-white);color:var(--text-muted);font-size:15px;cursor:pointer;font-weight:500;transition:var(--transition-normal)}
+.vendor-tab:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;transition:all .25s ease}
+.btn-primary{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
+.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-pdf{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
+.btn-pdf:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-pdf:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-muted);text-decoration:none}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);transform:translateX(-2px)}
+</style>

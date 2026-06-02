@@ -21,6 +21,12 @@ Thumbs.db
 
 # Database (contains user data)
 netconfig.db
+netconfig.db-shm
+netconfig.db-wal
+
+# Node
+vue-frontend/node_modules/
+vue-frontend/dist/
 
 # Downloads / temp
 *.msi

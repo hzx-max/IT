@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/office")
@@ -49,5 +50,13 @@ public class OfficeController {
     public ApiResponse<Void> delete(@PathVariable String id) {
         officeService.delete(id);
         return ApiResponse.success();
+    }
+
+    @PostMapping("/batch-delete")
+    public ApiResponse<Map<String, Integer>> batchDelete(@RequestBody Map<String, List<String>> body) {
+        List<String> ids = body.get("ids");
+        if (ids == null || ids.isEmpty()) return ApiResponse.error("ids required");
+        officeService.batchDelete(ids);
+        return ApiResponse.success(Map.of("deleted", ids.size()));
     }
 }

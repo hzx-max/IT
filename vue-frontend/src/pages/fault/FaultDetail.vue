@@ -1,0 +1,113 @@
+<template>
+  <MainLayout>
+    <div class="max-w-[960px] mx-auto export-pdf-area">
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+        <h2 class="text-[26px] font-bold">{{ item?.title || '加载中...' }}</h2>
+        <div class="flex gap-2.5 flex-wrap items-center">
+          <button class="btn btn-primary text-sm" @click="$router.push('/fault/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
+          <button class="btn btn-ghost text-sm" @click="$router.back()">&larr; 返回</button>
+        </div>
+      </div>
+
+      <div v-if="loading" class="text-center py-20 text-slate-400"><div class="w-9 h-9 mx-auto mb-4 border-3 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>加载中...</div>
+      <div v-else-if="error" class="text-center py-20 text-red-500">{{ error }}</div>
+
+      <template v-else-if="item">
+        <div v-if="item.images && item.images.length > 0" class="detail-section">
+          <div class="detail-label">图片</div>
+          <div class="media-grid">
+            <img v-for="(img, idx) in item.images" :key="idx" :src="img" class="media-img"
+              @click="previewImage = img" style="cursor:pointer">
+          </div>
+        </div>
+        <div v-if="item.videos && item.videos.length > 0" class="detail-section">
+          <div class="detail-label">视频</div>
+          <div class="media-grid">
+            <video v-for="(vid, idx) in item.videos" :key="idx" :src="vid" class="media-video" controls></video>
+          </div>
+        </div>
+        <div v-if="item?.symptom" class="detail-section"><div class="detail-label">故障现象</div><div class="detail-value">{{ item.symptom }}</div></div>
+        <div v-if="item?.cause" class="detail-section"><div class="detail-label">故障原因</div><div class="detail-value">{{ item.cause }}</div></div>
+        <div v-if="item?.solution" class="detail-section"><div class="detail-label">解决方案</div><div class="detail-value">{{ item.solution }}</div></div>
+        <div class="detail-footer">
+          <span v-if="item?.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+          <span v-if="item?.category" class="tag-cat">{{ item.category }}</span>
+        </div>
+      </template>
+    </div>
+
+    <div v-if="previewImage" class="image-overlay" @click="previewImage = null">
+      <img :src="previewImage" class="image-preview-large">
+    </div>
+  </MainLayout>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import MainLayout from '../../layouts/MainLayout.vue'
+import { apiFaults, formatTime } from '../../api/index.js'
+
+const route = useRoute()
+const item = ref(null)
+const loading = ref(true)
+const error = ref('')
+const previewImage = ref(null)
+
+function loadHtml2Pdf() {
+  return new Promise((resolve, reject) => {
+    if (window.html2pdf) { resolve(); return }
+    const s = document.createElement('script')
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+    s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
+  })
+}
+
+async function exportPDF() {
+  const btn = document.querySelector('.btn-pdf')
+  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
+  try {
+    await loadHtml2Pdf()
+    const el = document.querySelector('.export-pdf-area')
+    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
+    await window.html2pdf().set(opt).from(el).save()
+  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
+  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+}
+
+onMounted(async () => {
+  try {
+    const res = await apiFaults.get(route.params.id)
+    item.value = res.data
+    if (item.value) {
+      document.title = item.value.title + ' - IT运维学习平台'
+    }
+  } catch (e) { error.value = '加载失败: ' + e.message }
+  finally { loading.value = false }
+})
+</script>
+
+<style scoped>
+.detail-section{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
+.detail-section:hover{box-shadow:var(--shadow-md)}
+.detail-label{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-value{font-size:16px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.detail-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.tag-time{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f0f9ff;color:#2563eb;border:1.5px solid #bfdbfe;display:inline-block}
+.tag-cat{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;transition:all .25s ease}
+.btn-primary{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
+.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-pdf{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
+.btn-pdf:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-pdf:disabled{opacity:.6;cursor:not-allowed}
+.btn-ghost{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-muted);text-decoration:none}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);transform:translateX(-2px)}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.media-img{width:100%;border-radius:6px;border:1.5px solid #e2e8f0;object-fit:cover;aspect-ratio:16/10;transition:transform .2s}
+.media-img:hover{transform:scale(1.02)}
+.media-video{width:100%;border-radius:6px;border:1.5px solid #e2e8f0}
+.image-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.image-preview-large{max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain}
+</style>

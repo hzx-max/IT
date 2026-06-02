@@ -28,6 +28,12 @@ public class Desktop {
     @Column(columnDefinition = "TEXT DEFAULT '{}'")
     private String docs;
 
+    @Column(columnDefinition = "TEXT DEFAULT '[]'")
+    private String images;
+
+    @Column(columnDefinition = "TEXT DEFAULT '[]'")
+    private String videos;
+
     @Column(name = "created_at")
     private String createdAt;
 }

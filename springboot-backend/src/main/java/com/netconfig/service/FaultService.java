@@ -17,7 +17,7 @@ public class FaultService {
     private final FaultRepository faultRepository;
 
     public List<FaultDTO> findAll() {
-        return faultRepository.findAll().stream()
+        return faultRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -31,6 +31,7 @@ public class FaultService {
     @Transactional
     public FaultDTO create(FaultDTO dto) {
         Fault entity = toEntity(dto);
+        entity.setCreatedAt(JsonUtil.nowLocal());
         Fault saved = faultRepository.save(entity);
         return toDTO(saved);
     }
@@ -40,6 +41,7 @@ public class FaultService {
         Fault entity = faultRepository.findById(id).orElse(null);
         if (entity == null) return null;
         updateEntity(entity, dto);
+        entity.setCreatedAt(JsonUtil.nowLocal());
         Fault saved = faultRepository.save(entity);
         return toDTO(saved);
     }
@@ -47,6 +49,11 @@ public class FaultService {
     @Transactional
     public void delete(String id) {
         faultRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void batchDelete(List<String> ids) {
+        faultRepository.deleteAllById(ids);
     }
 
     private FaultDTO toDTO(Fault e) {
@@ -59,7 +66,9 @@ public class FaultService {
         d.setSolution(e.getSolution());
         d.setTopo(JsonUtil.toList(e.getTopo()));
         d.setDocs(JsonUtil.toMap(e.getDocs()));
-        d.setCreatedAt(JsonUtil.utcToLocal(e.getCreatedAt()));
+        d.setImages(JsonUtil.toStringList(e.getImages()));
+        d.setVideos(JsonUtil.toStringList(e.getVideos()));
+        d.setCreatedAt(e.getCreatedAt());
         return d;
     }
 
@@ -78,5 +87,7 @@ public class FaultService {
         e.setSolution(d.getSolution() != null ? d.getSolution() : "");
         e.setTopo(JsonUtil.toJson(d.getTopo()));
         e.setDocs(JsonUtil.toJson(d.getDocs()));
+        e.setImages(JsonUtil.toJson(d.getImages()));
+        e.setVideos(JsonUtil.toJson(d.getVideos()));
     }
 }

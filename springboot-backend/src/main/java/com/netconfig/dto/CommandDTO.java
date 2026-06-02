@@ -8,14 +8,21 @@ import java.util.Map;
 public class CommandDTO {
     private String id;
     private String title;
-    private String vendor;
     private String cat;
     private List<Map<String, Object>> topo;
     private String desc;
     private String detail;
-    private Map<String, String> configs;
-    private Map<String, String> comments;
-    private Map<String, String> docs;
-    private Map<String, String> verification;
+    private List<ConfigItem> configs;
     private String createdAt;
+
+    @Data
+    public static class ConfigItem {
+        private String id;
+        private String vendor;
+        private String config;
+        private String comment;
+        private String doc;
+        private String verificationCmd;
+        private List<Map<String, Object>> verificationImages;
+    }
 }

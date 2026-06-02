@@ -13,5 +13,7 @@ public class DesktopDTO {
     private String solution;
     private List<Map<String, Object>> topo;
     private Map<String, String> docs;
+    private List<String> images;
+    private List<String> videos;
     private String createdAt;
 }
