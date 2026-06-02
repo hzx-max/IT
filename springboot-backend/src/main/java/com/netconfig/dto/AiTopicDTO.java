@@ -17,5 +17,6 @@ public class AiTopicDTO {
     private List<Map<String, Object>> topo;
     private List<String> images;
     private List<String> videos;
+    private List<Map<String, Object>> files;
     private String createdAt;
 }

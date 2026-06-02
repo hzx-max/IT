@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索AI运维..." :showVendor="false" :showCat="true"
-      module="ai"
+      module="ai-admin"
       v-model:catValue="catFilter" :catMap="aiCatMap" />
 
     <div class="table-wrap mt-[18px]">

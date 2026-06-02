@@ -46,6 +46,24 @@
 
         <div v-if="item?.detail" class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail }}</div></div>
 
+        <div v-if="item?.files && item.files.length > 0" class="detail-section">
+          <div class="detail-label">附件</div>
+          <div class="file-list">
+            <div v-for="(f, i) in item.files" :key="'file-'+i" class="file-row">
+              <div class="file-icon" :style="{ background: getFileIconBg(f.name), color: getFileIconColor(f.name) }">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="file-info">
+                <div class="file-name" :title="f.name">{{ f.name }}</div>
+                <div class="file-meta">{{ formatFileSize(f.size) }} · {{ getFileExtLabel(f.name) }}</div>
+              </div>
+              <a :href="f.url" :download="f.name" class="file-download-btn" @click.stop>下载</a>
+            </div>
+          </div>
+        </div>
+
         <div class="detail-section">
           <div class="detail-label mb-2">学习笔记</div>
           <textarea v-model="noteContent" class="w-full px-3.5 py-[11px] border border-slate-200 rounded-md text-sm outline-none font-inherit resize-y transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(37,99,235,.12)]" rows="4" placeholder="在此记录你的学习笔记..."></textarea>
@@ -78,6 +96,22 @@ const error = ref('')
 const activeConfig = ref(0)
 const noteContent = ref('')
 const noteStatus = ref('')
+
+const extColors = {
+  pdf: { bg: '#fef2f2', color: '#ef4444' },
+  doc: { bg: '#eff6ff', color: '#3b82f6' }, docx: { bg: '#eff6ff', color: '#3b82f6' },
+  xls: { bg: '#ecfdf5', color: '#10b981' }, xlsx: { bg: '#ecfdf5', color: '#10b981' }, csv: { bg: '#ecfdf5', color: '#10b981' },
+  ppt: { bg: '#fff7ed', color: '#f97316' }, pptx: { bg: '#fff7ed', color: '#f97316' },
+  zip: { bg: '#f8fafc', color: '#64748b' }, rar: { bg: '#f8fafc', color: '#64748b' },
+  '7z': { bg: '#f8fafc', color: '#64748b' }, tar: { bg: '#f8fafc', color: '#64748b' }, gz: { bg: '#f8fafc', color: '#64748b' },
+  txt: { bg: '#f8fafc', color: '#64748b' }, md: { bg: '#f8fafc', color: '#64748b' },
+}
+function getFileExt(name) { const idx = (name || '').lastIndexOf('.'); return idx >= 0 ? name.slice(idx + 1).toLowerCase() : '' }
+function getFileIconColor(name) { return extColors[getFileExt(name)]?.color || '#64748b' }
+function getFileIconBg(name) { return extColors[getFileExt(name)]?.bg || '#f8fafc' }
+const extLabels = { pdf:'PDF',doc:'Word',docx:'Word',xls:'Excel',xlsx:'Excel',csv:'CSV',ppt:'PPT',pptx:'PPT',zip:'压缩包',rar:'压缩包','7z':'压缩包',tar:'压缩包',gz:'压缩包',txt:'文本',md:'Markdown',jpg:'图片',jpeg:'图片',png:'图片',gif:'图片',webp:'图片',mp4:'视频',avi:'视频',mov:'视频',mp3:'音频',wav:'音频' }
+function getFileExtLabel(name) { return extLabels[getFileExt(name)] || getFileExt(name).toUpperCase() || '文件' }
+function formatFileSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+' B'; if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB'; return (bytes/1048576).toFixed(1)+' MB' }
 
 const configs = computed(() => {
   if (!item.value?.configs) return []
@@ -155,4 +189,14 @@ onMounted(async () => {
 .btn-pdf:disabled{opacity:.6;cursor:not-allowed}
 .btn-ghost{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-muted);text-decoration:none}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);transform:translateX(-2px)}
+/* 附件列表 */
+.file-list{display:flex;flex-direction:column;gap:8px}
+.file-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;transition:all .2s}
+.file-row:hover{border-color:#93c5fd;background:#f8fafc}
+.file-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:14px;font-weight:500;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:12px;color:#94a3b8;margin-top:2px}
+.file-download-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0}
+.file-download-btn:hover{background:#1d4ed8}
 </style>

@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索AI运维..." :showVendor="false" :showCat="true"
-      module="ai"
+      module="ai-list"
       v-model:catValue="catFilter" :catMap="aiCatMap" />
 
     <div v-if="filtered.length === 0" class="text-center py-[60px] text-slate-400 text-base">

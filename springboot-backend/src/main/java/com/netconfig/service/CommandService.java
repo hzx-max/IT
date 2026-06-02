@@ -39,6 +39,7 @@ public class CommandService {
         topic.setTopo(JsonUtil.toJson(dto.getTopo()));
         topic.setDesc(dto.getDesc() != null ? dto.getDesc() : "");
         topic.setDetail(dto.getDetail() != null ? dto.getDetail() : "");
+        topic.setFiles(JsonUtil.toJson(dto.getFiles()));
         topic.setCreatedAt(JsonUtil.nowLocal());
         CommandTopic saved = topicRepository.save(topic);
 
@@ -59,6 +60,7 @@ public class CommandService {
         topic.setTopo(JsonUtil.toJson(dto.getTopo()));
         topic.setDesc(dto.getDesc() != null ? dto.getDesc() : "");
         topic.setDetail(dto.getDetail() != null ? dto.getDetail() : "");
+        topic.setFiles(JsonUtil.toJson(dto.getFiles()));
         topic.setCreatedAt(JsonUtil.nowLocal());
         topicRepository.save(topic);
 
@@ -118,6 +120,7 @@ public class CommandService {
         d.setTopo(JsonUtil.toList(t.getTopo()));
         d.setDesc(t.getDesc());
         d.setDetail(t.getDetail());
+        d.setFiles(JsonUtil.toList(t.getFiles()));
         d.setCreatedAt(t.getCreatedAt());
         List<CommandConfig> cfgs = configRepository.findByTopicIdOrderByVendor(t.getId());
         d.setConfigs(cfgs.stream().map(this::toConfigItem).collect(Collectors.toList()));

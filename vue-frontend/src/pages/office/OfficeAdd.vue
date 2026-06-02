@@ -56,6 +56,11 @@
           <textarea v-model="form.config" rows="5" placeholder="输入配置内容" class="form-input font-mono"></textarea>
         </div>
 
+        <div class="form-group">
+          <label>附件</label>
+          <FileUploader v-model="files" />
+        </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '保存' }}
@@ -77,6 +82,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import FileUploader from '../../components/FileUploader.vue'
 import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, apiOffice, apiCategories, apiUpload } from '../../api/index.js'
 
 const router = useRouter()
@@ -92,6 +98,7 @@ const modal = ref({ visible: false, message: '', type: 'confirm', action: null }
 
 const mediaInput = ref(null)
 const mediaItems = ref([])
+const files = ref([])
 const uploading = ref(false)
 
 function generateId() {
@@ -173,7 +180,8 @@ async function onSubmit() {
       detail: form.value.detail || '',
       config: form.value.config || '',
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
-      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
+      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
+      files: files.value
     }
     await apiOffice.create(dto)
     success.value = '保存成功！'

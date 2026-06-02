@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索故障..." :showVendor="false" :showCat="true"
-      module="fault"
+      module="fault-list"
       v-model:catValue="catFilter" :catMap="faultCatMap" />
 
     <div v-if="filtered.length === 0" class="text-center py-[60px] text-slate-400 text-base">

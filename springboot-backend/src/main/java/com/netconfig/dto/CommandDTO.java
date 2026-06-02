@@ -13,6 +13,7 @@ public class CommandDTO {
     private String desc;
     private String detail;
     private List<ConfigItem> configs;
+    private List<Map<String, Object>> files;
     private String createdAt;
 
     @Data

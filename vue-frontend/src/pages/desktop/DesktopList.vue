@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索桌面运维..." :showVendor="false" :showCat="true"
-      module="desktop"
+      module="desktop-list"
       v-model:catValue="catFilter" :catMap="dynCatMap" />
 
     <CategoryStrip :cats="allCats" :active="activeCat" @select="onCatSelect" />

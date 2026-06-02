@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索 Linux 内容..." :showVendor="true" :showCat="true"
-      module="linux"
+      module="linux-list"
       v-model:vendorValue="vendorFilter" v-model:catValue="catFilter"
       :vendorMap="LINUX_VENDOR_MAP" :catMap="dynCatMap" />
 

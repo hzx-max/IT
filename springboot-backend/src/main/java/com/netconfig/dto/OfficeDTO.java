@@ -19,5 +19,6 @@ public class OfficeDTO {
     private Map<String, String> docs;
     private List<String> images;
     private List<String> videos;
+    private List<Map<String, Object>> files;
     private String createdAt;
 }

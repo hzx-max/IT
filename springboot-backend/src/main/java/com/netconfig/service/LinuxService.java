@@ -73,6 +73,7 @@ public class LinuxService {
         d.setDocs(JsonUtil.toMap(e.getDocs()));
         d.setImages(JsonUtil.toStringList(e.getImages()));
         d.setVideos(JsonUtil.toStringList(e.getVideos()));
+        d.setFiles(JsonUtil.toList(e.getFiles()));
         d.setCreatedAt(e.getCreatedAt());
         if (configsMap.containsKey(e.getVendor())) {
             d.setConfig(configsMap.get(e.getVendor()));
@@ -101,6 +102,7 @@ public class LinuxService {
         e.setDocs(JsonUtil.toJson(d.getDocs()));
         e.setImages(JsonUtil.toJson(d.getImages()));
         e.setVideos(JsonUtil.toJson(d.getVideos()));
+        e.setFiles(JsonUtil.toJson(d.getFiles()));
     }
 
     private String buildConfigsJson(LinuxDTO d) {

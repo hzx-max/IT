@@ -43,6 +43,9 @@ public class Linux {
     @Column(columnDefinition = "TEXT DEFAULT '[]'")
     private String videos;
 
+    @Column(columnDefinition = "TEXT DEFAULT '[]'")
+    private String files;
+
     @Column(name = "created_at")
     private String createdAt;
 }

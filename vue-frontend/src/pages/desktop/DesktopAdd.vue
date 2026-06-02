@@ -44,6 +44,11 @@
           <textarea v-model="form.solution" rows="5" placeholder="描述解决方案" class="form-input"></textarea>
         </div>
 
+        <div class="form-group">
+          <label>附件</label>
+          <FileUploader v-model="files" />
+        </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '保存' }}
@@ -65,6 +70,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import FileUploader from '../../components/FileUploader.vue'
 import { apiDesktop, apiCategories, apiUpload } from '../../api/index.js'
 
 const DEFAULT_CATS = { '系统设置': '系统设置', '软件安装': '软件安装', '硬件驱动': '硬件驱动', '网络设置': '网络设置', '安全防护': '安全防护' }
@@ -82,6 +88,7 @@ const modal = ref({ visible: false, message: '', type: 'confirm', action: null }
 
 const mediaInput = ref(null)
 const mediaItems = ref([])
+const files = ref([])
 const uploading = ref(false)
 
 function generateId() {
@@ -161,7 +168,8 @@ async function onSubmit() {
       symptom: form.value.symptom || '',
       solution: form.value.solution || '',
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
-      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
+      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
+      files: files.value
     })
     success.value = '保存成功！'
     setTimeout(() => router.push('/desktop'), 1000)

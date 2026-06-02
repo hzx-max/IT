@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -123,6 +123,15 @@
 
       <div class="max-w-[720px] mx-auto mt-4">
         <div class="form-card">
+          <div class="form-group">
+            <label>附件</label>
+            <FileUploader v-model="files" />
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-[720px] mx-auto mt-4">
+        <div class="form-card">
           <div class="form-actions" style="border:none;padding-top:0;margin-top:0">
             <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
               {{ submitting ? '提交中...' : '保存' }}
@@ -145,6 +154,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import FileUploader from '../../components/FileUploader.vue'
 import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, apiTopics, apiCategories } from '../../api/index.js'
 
 const router = useRouter()
@@ -161,6 +171,7 @@ const modal = ref({ visible: false, message: '', type: 'confirm', action: null }
 const topoFiles = ref([])
 const verifyFiles = ref([])
 const vendorConfigs = ref([])
+const files = ref([])
 const vendorForm = ref({ vendor: 'huawei', config: '', comment: '', verificationCmd: '', doc: '' })
 
 function generateId() {
@@ -258,7 +269,8 @@ async function onSubmit() {
       detail: form.value.detail || '',
       topo: topoData,
       configs: vendorConfigs.value,
-      comments: {}, docs: {}, verification: {}
+      comments: {}, docs: {}, verification: {},
+      files: files.value
     }
     await apiTopics.create(dto)
     success.value = '保存成功！'

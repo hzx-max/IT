@@ -5,6 +5,7 @@
              class="search-input"
              @input="$emit('update:modelValue', $event.target.value)"
              @focus="onFocus"
+             @click="onFocus"
              @keydown.enter="onEnter"
              data-search-focus>
       <div v-if="showHistory && historyList.length > 0" class="history-dropdown">
@@ -29,6 +30,7 @@
       <option value="">全部分类</option>
       <option v-for="(l,k) in catMap" :key="k" :value="k">{{ k === l ? l : k + ' - ' + l }}</option>
     </select>
+    <button class="search-btn" @click="onSearchClick">搜索</button>
   </div>
 </template>
 
@@ -61,6 +63,12 @@ async function loadHistory() {
 async function onEnter(e) {
   const val = e.target.value.trim()
   emit('enter', val)
+  showHistory.value = false
+}
+
+async function onSearchClick() {
+  const val = (props.modelValue || '').trim()
+  emit('enter', val)
   if (val && props.module) {
     try { await apiSearchHistory.save(props.module, val) } catch {}
     await loadHistory()
@@ -90,9 +98,8 @@ function onClickOutside(e) {
 }
 
 function onFocus() {
-  setTimeout(() => {
-    showHistory.value = true
-  }, 0)
+  showHistory.value = true
+  loadHistory()
 }
 
 onMounted(() => {
@@ -135,4 +142,11 @@ onBeforeUnmount(() => {
 }
 .search-select:hover{border-color:#cbd5e1}
 .search-select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.search-btn{
+  padding:11px 20px;border:1.5px solid #2563eb;border-radius:8px;
+  font-size:14px;font-weight:500;background:#2563eb;color:#fff;
+  outline:none;cursor:pointer;transition:all .2s ease;white-space:nowrap
+}
+.search-btn:hover{background:#1d4ed8;border-color:#1d4ed8}
+.search-btn:active{background:#1e40af;border-color:#1e40af}
 </style>

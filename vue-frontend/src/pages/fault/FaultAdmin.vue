@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索故障..." :showVendor="false" :showCat="true"
-      module="fault"
+      module="fault-admin"
       v-model:catValue="catFilter" :catMap="faultCatMap" />
 
     <div class="table-wrap mt-[18px]">

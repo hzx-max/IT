@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索办公项目..." :showVendor="true" :showCat="true"
-      module="office"
+      module="office-list"
       v-model:vendorValue="vendorFilter" v-model:catValue="catFilter"
       :vendorMap="OFFICE_VENDOR_MAP" :catMap="dynCatMap" />
 

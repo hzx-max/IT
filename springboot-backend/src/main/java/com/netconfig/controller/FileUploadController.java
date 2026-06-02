@@ -16,7 +16,7 @@ import java.util.*;
 @RequestMapping("/api/upload")
 public class FileUploadController {
 
-    private static final String UPLOAD_DIR = "uploads";
+    private static final String UPLOAD_DIR = new File("uploads").getAbsolutePath();
 
     @PostMapping
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> upload(@RequestParam("files") List<MultipartFile> files) {

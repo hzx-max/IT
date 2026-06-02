@@ -59,6 +59,11 @@
           <textarea v-model="form.detail" rows="6" placeholder="详细说明" class="form-input"></textarea>
         </div>
 
+        <div class="form-group">
+          <label>附件</label>
+          <FileUploader v-model="files" />
+        </div>
+
         <div class="form-actions">
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '保存' }}
@@ -80,6 +85,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import FileUploader from '../../components/FileUploader.vue'
 import { apiAi, apiCategories, apiUpload } from '../../api/index.js'
 
 const DEFAULT_CATS = { 'ChatGPT': 'ChatGPT', 'Claude': 'Claude', 'Copilot': 'Copilot', '文心一言': '文心一言', '通义千问': '通义千问', 'DeepSeek': 'DeepSeek', '提示词': '提示词', 'AI工具': 'AI工具', 'AI部署': 'AI部署' }
@@ -97,6 +103,7 @@ const modal = ref({ visible: false, message: '', type: 'confirm', action: null }
 
 const mediaInput = ref(null)
 const mediaItems = ref([])
+const files = ref([])
 const uploading = ref(false)
 
 function generateId() {
@@ -179,7 +186,8 @@ async function onSubmit() {
       desc: form.value.desc || '',
       detail: form.value.detail || '',
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
-      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
+      videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
+      files: files.value
     })
     success.value = '保存成功！'
     setTimeout(() => router.push('/ai'), 1000)

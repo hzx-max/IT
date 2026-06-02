@@ -80,7 +80,7 @@ export const apiUpload = {
     const formData = new FormData()
     files.forEach(f => formData.append('files', f))
     return http.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': undefined }
     })
   }
 }

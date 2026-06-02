@@ -69,6 +69,7 @@ public class AiTopicService {
         d.setTopo(JsonUtil.toList(e.getTopo()));
         d.setImages(JsonUtil.toStringList(e.getImages()));
         d.setVideos(JsonUtil.toStringList(e.getVideos()));
+        d.setFiles(JsonUtil.toList(e.getFiles()));
         d.setCreatedAt(e.getCreatedAt());
         return d;
     }
@@ -91,5 +92,6 @@ public class AiTopicService {
         e.setTopo(JsonUtil.toJson(d.getTopo()));
         e.setImages(JsonUtil.toJson(d.getImages()));
         e.setVideos(JsonUtil.toJson(d.getVideos()));
+        e.setFiles(JsonUtil.toJson(d.getFiles()));
     }
 }

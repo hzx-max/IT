@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -36,11 +36,11 @@
           <div class="form-group">
             <label>厂商 <span class="text-red-600">*</span></label>
             <div class="vendor-row">
-              <select v-model="vendorForm.vendor" class="form-input vendor-select">
+              <select v-model="vendorForm.vendor" class="form-input vendor-select" @change="onVendorChange">
                 <option v-for="(v,k) in VENDOR_MAP" :key="k" :value="k">{{ v.n }}</option>
               </select>
               <button class="btn btn-primary btn-add-vendor" @click="addVendorConfig" :disabled="!vendorForm.vendor || !vendorForm.config">
-                添加
+                {{ vendorExists ? '更新' : '添加' }}
               </button>
             </div>
           </div>
@@ -78,6 +78,8 @@
               </div>
               <pre class="config-pre">{{ cfg.config }}</pre>
               <div v-if="cfg.comment" class="text-sm text-slate-500 mt-1">{{ cfg.comment }}</div>
+              <div v-if="cfg.verificationCmd" class="text-sm text-slate-500 mt-1">验证: {{ cfg.verificationCmd }}</div>
+              <div v-if="cfg.doc" class="text-sm text-blue-500 mt-1"><a :href="cfg.doc" target="_blank" class="hover:underline">参考文档</a></div>
             </div>
           </div>
         </div>
@@ -122,6 +124,25 @@ const modal = ref({ visible: false, message: '', type: 'confirm' })
 const vendorConfigs = ref([])
 const vendorForm = ref({ vendor: 'huawei', config: '', comment: '', verificationCmd: '', doc: '' })
 
+const vendorExists = computed(() => {
+  return vendorConfigs.value.some(c => c.vendor === vendorForm.value.vendor)
+})
+
+function onVendorChange() {
+  const existing = vendorConfigs.value.find(c => c.vendor === vendorForm.value.vendor)
+  if (existing) {
+    vendorForm.value.config = existing.config
+    vendorForm.value.comment = existing.comment || ''
+    vendorForm.value.verificationCmd = existing.verificationCmd || ''
+    vendorForm.value.doc = existing.doc || ''
+  } else {
+    vendorForm.value.config = ''
+    vendorForm.value.comment = ''
+    vendorForm.value.verificationCmd = ''
+    vendorForm.value.doc = ''
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await apiTopics.get(route.params.id)
@@ -146,18 +167,31 @@ onMounted(async () => {
 
 function addVendorConfig() {
   if (!vendorForm.value.vendor || !vendorForm.value.config) return
-  vendorConfigs.value.push({
+  const idx = vendorConfigs.value.findIndex(c => c.vendor === vendorForm.value.vendor)
+  const entry = {
     vendor: vendorForm.value.vendor,
     config: vendorForm.value.config,
     comment: vendorForm.value.comment || '',
     verificationCmd: vendorForm.value.verificationCmd || '',
     doc: vendorForm.value.doc || ''
-  })
+  }
+  if (idx >= 0) {
+    vendorConfigs.value[idx] = entry
+  } else {
+    vendorConfigs.value.push(entry)
+  }
   vendorForm.value = { vendor: 'huawei', config: '', comment: '', verificationCmd: '', doc: '' }
 }
 
 function removeVendorConfig(i) {
+  const removedVendor = vendorConfigs.value[i]?.vendor
   vendorConfigs.value.splice(i, 1)
+  if (removedVendor === vendorForm.value.vendor) {
+    vendorForm.value.config = ''
+    vendorForm.value.comment = ''
+    vendorForm.value.verificationCmd = ''
+    vendorForm.value.doc = ''
+  }
 }
 
 async function onSubmit() {

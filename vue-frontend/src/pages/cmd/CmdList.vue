@@ -6,7 +6,7 @@
     </div>
 
     <SearchBar v-model="search" placeholder="搜索命令..." :showVendor="true" :showCat="true"
-      module="cmd"
+      module="cmd-list"
       v-model:vendorValue="vendorFilter" v-model:catValue="catFilter"
       :vendorMap="VENDOR_MAP" :catMap="dynCatMap" />
 
