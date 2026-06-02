@@ -24,6 +24,9 @@ netconfig.db
 netconfig.db-shm
 netconfig.db-wal
 
+# Uploaded files
+springboot-backend/uploads/
+
 # Node
 vue-frontend/node_modules/
 vue-frontend/dist/
