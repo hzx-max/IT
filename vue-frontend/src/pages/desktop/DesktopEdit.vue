@@ -69,6 +69,7 @@ import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import { apiDesktop, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const CATEGORIES = ['系统设置', '软件安装', '硬件驱动', '网络设置', '安全防护']
 
@@ -104,7 +105,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -146,7 +147,7 @@ async function onSubmit() {
   error.value = ''
   successMsg.value = ''
   try {
-    await apiDesktop.update(route.params.id, {
+    const dto = {
       id: form.value.id,
       title: form.value.title,
       category: form.value.category,
@@ -154,9 +155,14 @@ async function onSubmit() {
       solution: form.value.solution || '',
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
-    })
-    successMsg.value = '更新成功！'
-    setTimeout(() => router.push('/desktop'), 1000)
+    }
+    const result = await submitWithApproval('desktop', 'UPDATE', dto, route.params.id, () => apiDesktop.update(route.params.id, dto))
+    if (result.ok) {
+      successMsg.value = result.message
+      setTimeout(() => router.push('/desktop'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) { error.value = '更新失败: ' + (e.response?.data?.msg || e.message) }
   finally { submitting.value = false }
 }

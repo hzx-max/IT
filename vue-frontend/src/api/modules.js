@@ -1,5 +1,22 @@
 import http from './http.js'
 
+export const apiAuth = {
+  login: (data) => http.post('/auth/login', data),
+  register: (data) => http.post('/auth/register', data),
+  logout: () => http.post('/auth/logout'),
+  me: () => http.get('/auth/me'),
+  getUsers: () => http.get('/auth/users'),
+  approveUser: (userId, approved) => http.post(`/auth/approve/${userId}`, { approved }),
+  deleteUser: (userId) => http.delete(`/auth/users/${userId}`)
+}
+
+export const apiAdmin = {
+  submitPendingChange: (data) => http.post('/admin/pending-change', data),
+  getPendingChanges: () => http.get('/admin/pending-changes'),
+  approveChange: (id) => http.post(`/admin/pending-change/${id}/approve`),
+  rejectChange: (id) => http.post(`/admin/pending-change/${id}/reject`)
+}
+
 export const apiTopics = {
   list: () => http.get('/topics'),
   get: (id) => http.get(`/topics/${id}`),

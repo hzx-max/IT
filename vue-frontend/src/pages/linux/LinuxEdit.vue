@@ -80,6 +80,7 @@ import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -114,7 +115,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -158,14 +159,19 @@ async function onSubmit() {
   error.value = ''
   successMsg.value = ''
   try {
-    await apiLinux.update(route.params.id, {
+    const dto = {
       id: form.value.id, title: form.value.title, vendor: form.value.vendor, cat: form.value.cat,
       desc: form.value.desc || '', detail: form.value.detail || '', config: form.value.config || '',
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url)
-    })
-    successMsg.value = '更新成功！'
-    setTimeout(() => router.push('/linux'), 1000)
+    }
+    const result = await submitWithApproval('linux', 'UPDATE', dto, route.params.id, () => apiLinux.update(route.params.id, dto))
+    if (result.ok) {
+      successMsg.value = result.message
+      setTimeout(() => router.push('/linux'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) { error.value = '更新失败: ' + (e.response?.data?.msg || e.message) }
   finally { submitting.value = false }
 }

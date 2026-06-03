@@ -87,6 +87,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { apiAi, apiCategories, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const DEFAULT_CATS = { 'ChatGPT': 'ChatGPT', 'Claude': 'Claude', 'Copilot': 'Copilot', '文心一言': '文心一言', '通义千问': '通义千问', 'DeepSeek': 'DeepSeek', '提示词': '提示词', 'AI工具': 'AI工具', 'AI部署': 'AI部署' }
 
@@ -128,7 +129,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -176,7 +177,7 @@ async function onSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await apiAi.create({
+    const dto = {
       id: generateId(),
       title: form.value.title,
       category: form.value.category,
@@ -188,9 +189,14 @@ async function onSubmit() {
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
       files: files.value
-    })
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/ai'), 1000)
+    }
+    const result = await submitWithApproval('ai', 'CREATE', dto, null, () => apiAi.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/ai'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

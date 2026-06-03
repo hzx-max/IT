@@ -84,6 +84,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, apiCategories, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const router = useRouter()
 const submitting = ref(false)
@@ -123,7 +124,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -171,7 +172,7 @@ async function onSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await apiLinux.create({
+    const dto = {
       id: generateId(),
       title: form.value.title,
       vendor: form.value.vendor,
@@ -182,9 +183,14 @@ async function onSubmit() {
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
       files: files.value
-    })
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/linux'), 1000)
+    }
+    const result = await submitWithApproval('linux', 'CREATE', dto, null, () => apiLinux.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/linux'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

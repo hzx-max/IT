@@ -84,6 +84,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, apiOffice, apiCategories, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const router = useRouter()
 const submitting = ref(false)
@@ -123,7 +124,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -183,9 +184,13 @@ async function onSubmit() {
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
       files: files.value
     }
-    await apiOffice.create(dto)
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/office'), 1000)
+    const result = await submitWithApproval('office', 'CREATE', dto, null, () => apiOffice.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/office'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

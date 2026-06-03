@@ -7,6 +7,21 @@
         <p class="home-subtitle">涵盖网络命令、故障排查、桌面运维、Linux系统、Office办公、AI运维等IT运维核心知识</p>
       </div>
 
+      <div class="home-auth-bar">
+        <template v-if="loggedIn">
+          <span class="auth-user-info">
+            <span class="auth-avatar">{{ username.charAt(0).toUpperCase() }}</span>
+            <span class="auth-username">{{ username }}</span>
+            <span class="auth-role" :class="role === 'SUPER_ADMIN' ? 'role-super' : 'role-admin'">{{ role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}</span>
+          </span>
+          <button class="auth-btn auth-btn-outline" @click="onLogout">退出登录</button>
+        </template>
+        <template v-else>
+          <router-link to="/login" class="auth-btn auth-btn-primary">管理员登录</router-link>
+          <router-link to="/register" class="auth-btn auth-btn-outline">注册管理员</router-link>
+        </template>
+      </div>
+
       <div class="home-grid">
         <router-link v-for="mod in modules" :key="mod.title" :to="mod.to" class="home-card">
           <div class="home-card-icon" :style="{ background: mod.iconBg }">
@@ -89,8 +104,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { apiTopics, apiFaults, apiDesktop, apiLinux, apiOffice, apiAi, apiClicks } from '../api/index.js'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { apiTopics, apiFaults, apiDesktop, apiLinux, apiOffice, apiAi, apiClicks, apiAuth } from '../api/index.js'
+
+const router = useRouter()
+const loggedIn = ref(false)
+const username = ref('')
+const role = ref('')
+
+function updateAuthState() {
+  const token = localStorage.getItem('token')
+  loggedIn.value = !!token
+  username.value = localStorage.getItem('username') || ''
+  role.value = localStorage.getItem('role') || ''
+}
+
+async function onLogout() {
+  try { await apiAuth.logout() } catch (e) { /* ignore */ }
+  localStorage.removeItem('token')
+  localStorage.removeItem('username')
+  localStorage.removeItem('role')
+  updateAuthState()
+  router.push('/')
+}
+
+function onStorageChange(e) {
+  if (e.key === 'token' || e.key === null) {
+    updateAuthState()
+  }
+}
 
 const moduleLabels = { cmd: '网络命令', fault: '网络故障', desktop: '桌面运维', linux: 'Linux系统', office: 'Office办公', ai: 'AI运维' }
 const moduleColors = { cmd: '#2563eb', fault: '#ea580c', desktop: '#059669', linux: '#7c3aed', office: '#dc2626', ai: '#a855f7' }
@@ -136,6 +179,8 @@ const loading = ref(true)
 const order = ['cmd', 'fault', 'desktop', 'linux', 'office', 'ai']
 
 onMounted(async () => {
+  updateAuthState()
+  window.addEventListener('storage', onStorageChange)
   try {
     const listResults = await Promise.allSettled([
       apiTopics.list(), apiFaults.list(), apiDesktop.list(),
@@ -199,6 +244,10 @@ onMounted(async () => {
   } catch (e) { console.error('加载统计失败:', e) }
   finally { loading.value = false }
 })
+
+onUnmounted(() => {
+  window.removeEventListener('storage', onStorageChange)
+})
 </script>
 
 <style scoped>
@@ -210,6 +259,19 @@ onMounted(async () => {
 .home-header{text-align:center;margin-bottom:56px}
 .home-title{font-size:40px;font-weight:800;color:#0f172a;margin:20px 0 12px;letter-spacing:-.5px}
 .home-subtitle{font-size:18px;color:#64748b;max-width:560px;margin:0 auto;line-height:1.7}
+.home-auth-bar{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:40px;padding:0 4px}
+.home-auth-links{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px}
+.auth-user-info{display:flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.auth-avatar{width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.auth-username{font-size:14px;color:#1e293b;font-weight:500}
+.auth-role{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px}
+.role-super{color:#7c3aed;background:#f5f3ff}
+.role-admin{color:#2563eb;background:#eff6ff}
+.auth-btn{display:inline-flex;align-items:center;padding:8px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;border:1.5px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.auth-btn-primary{background:#2563eb;color:#fff;border-color:#2563eb}
+.auth-btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.auth-btn-outline{background:#fff;color:#2563eb;border-color:#2563eb}
+.auth-btn-outline:hover{background:#2563eb;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.2)}
 .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:60px}
 .home-card{background:#fff;border-radius:16px;padding:28px 24px;border:1.5px solid #e2e8f0;cursor:pointer;transition:all .35s ease;text-decoration:none;position:relative;overflow:hidden}
 .home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));opacity:0;transition:opacity .3s ease}

@@ -64,6 +64,7 @@ import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import { apiFaults, formatTime } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const router = useRouter()
 const search = ref('')
@@ -105,8 +106,9 @@ function handleAction(e, id) {
 }
 
 async function doDelete(id) {
-  try { await apiFaults.delete(id); selected.value = selected.value.filter(i => i !== id); await loadData() }
-  catch { alert('删除失败，请重试') }
+  const result = await submitWithApproval('fault', 'DELETE', null, id, () => apiFaults.delete(id))
+  if (result.ok) { selected.value = selected.value.filter(i => i !== id); await loadData() }
+  else { alert(result.message) }
 }
 
 function toggleItem(id) {

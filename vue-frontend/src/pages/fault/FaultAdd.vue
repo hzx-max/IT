@@ -77,6 +77,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { apiFaults, apiCategories, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const DEFAULT_CATS = { '故障类': '故障类', '配置类': '配置类', '性能类': '性能类', '安全类': '安全类', '硬件类': '硬件类' }
 
@@ -118,7 +119,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -166,7 +167,7 @@ async function onSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await apiFaults.create({
+    const dto = {
       id: generateId(),
       title: form.value.title,
       category: form.value.category,
@@ -176,9 +177,14 @@ async function onSubmit() {
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
       files: files.value
-    })
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/fault'), 1000)
+    }
+    const result = await submitWithApproval('fault', 'CREATE', dto, null, () => apiFaults.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/fault'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

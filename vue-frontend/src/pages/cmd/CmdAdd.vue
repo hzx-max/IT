@@ -156,6 +156,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, apiTopics, apiCategories } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const router = useRouter()
 const submitting = ref(false)
@@ -272,9 +273,13 @@ async function onSubmit() {
       comments: {}, docs: {}, verification: {},
       files: files.value
     }
-    await apiTopics.create(dto)
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/cmd'), 1000)
+    const result = await submitWithApproval('cmd', 'CREATE', dto, null, () => apiTopics.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/cmd'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

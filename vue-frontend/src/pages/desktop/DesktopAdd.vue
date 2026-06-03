@@ -72,6 +72,7 @@ import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
 import { apiDesktop, apiCategories, apiUpload } from '../../api/index.js'
+import { submitWithApproval } from '../../api/approval.js'
 
 const DEFAULT_CATS = { '系统设置': '系统设置', '软件安装': '软件安装', '硬件驱动': '硬件驱动', '网络设置': '网络设置', '安全防护': '安全防护' }
 
@@ -113,7 +114,7 @@ async function uploadFiles(files) {
   uploading.value = true
   try {
     const res = await apiUpload.upload(files)
-    const uploadedItems = res.data.map(f => ({
+    const uploadedItems = res.data.data.map(f => ({
       url: f.url,
       type: f.type && f.type.startsWith('image/') ? 'image' : 'video'
     }))
@@ -161,7 +162,7 @@ async function onSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await apiDesktop.create({
+    const dto = {
       id: generateId(),
       title: form.value.title,
       category: form.value.category,
@@ -170,9 +171,14 @@ async function onSubmit() {
       images: mediaItems.value.filter(m => m.type === 'image').map(m => m.url),
       videos: mediaItems.value.filter(m => m.type === 'video').map(m => m.url),
       files: files.value
-    })
-    success.value = '保存成功！'
-    setTimeout(() => router.push('/desktop'), 1000)
+    }
+    const result = await submitWithApproval('desktop', 'CREATE', dto, null, () => apiDesktop.create(dto))
+    if (result.ok) {
+      success.value = result.message
+      setTimeout(() => router.push('/desktop'), 1000)
+    } else {
+      error.value = result.message
+    }
   } catch (e) {
     error.value = '保存失败: ' + (e.response?.data?.msg || e.message)
   }

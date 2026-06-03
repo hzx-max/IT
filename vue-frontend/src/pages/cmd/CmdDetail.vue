@@ -19,6 +19,19 @@
       <template v-else-if="item">
         <div v-if="item?.desc" class="detail-section"><div class="detail-label">描述</div><div class="detail-value">{{ item.desc }}</div></div>
 
+        <div v-if="item?.detail" class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail }}</div></div>
+
+        <!-- 拓扑图 -->
+        <div v-if="topoImages.length > 0" class="detail-section">
+          <div class="detail-label">拓扑图</div>
+          <div class="image-grid">
+            <div v-for="(img, idx) in topoImages" :key="'topo-'+idx" class="image-item">
+              <img :src="img.url" :alt="img.name || '拓扑图'" class="image-thumb" @click="previewImage(img.url)" @error="onImageError" loading="lazy" />
+              <span class="image-name">{{ img.name || '拓扑图' + (idx+1) }}</span>
+            </div>
+          </div>
+        </div>
+
         <div v-if="configs.length > 0" class="detail-section">
           <div class="detail-label mb-3">厂商配置</div>
           <div class="flex gap-1.5 flex-wrap mb-[18px]">
@@ -41,10 +54,18 @@
               <div class="font-semibold text-sm text-slate-700 mb-2">验证命令</div>
               <pre class="code-block">{{ cfg.verificationCmd }}</pre>
             </div>
+            <!-- 验证命令图片 -->
+            <div v-if="getVerificationImages(cfg).length > 0" class="mt-4">
+              <div class="font-semibold text-sm text-slate-700 mb-2">验证截图</div>
+              <div class="image-grid">
+                <div v-for="(img, idx) in getVerificationImages(cfg)" :key="'verify-'+idx" class="image-item">
+                  <img :src="img.url" :alt="img.name || '验证截图'" class="image-thumb" @click="previewImage(img.url)" @error="onImageError" loading="lazy" />
+                  <span class="image-name">{{ img.name || '截图' + (idx+1) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div v-if="item?.detail" class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail }}</div></div>
 
         <div v-if="item?.files && item.files.length > 0" class="detail-section">
           <div class="detail-label">附件</div>
@@ -121,6 +142,30 @@ const configs = computed(() => {
     return keys.indexOf(a.vendor) - keys.indexOf(b.vendor)
   })
 })
+
+const topoImages = computed(() => {
+  if (!item.value?.topo) return []
+  const arr = typeof item.value.topo === 'string' ? JSON.parse(item.value.topo) : item.value.topo
+  return Array.isArray(arr) ? arr.filter(f => f.type === 'image' || f.type?.startsWith('image/') || (!f.type && f.url)) : []
+})
+
+function getVerificationImages(cfg) {
+  if (!cfg) return []
+  const key = cfg.verificationImages !== undefined ? cfg.verificationImages : cfg.verification_images
+  if (!key) return []
+  const arr = typeof key === 'string' ? JSON.parse(key) : key
+  return Array.isArray(arr) ? arr.filter(f => f.type === 'image' || f.type?.startsWith('image/') || (!f.type && f.url)) : []
+}
+
+function previewImage(url) {
+  window.open(url, '_blank')
+}
+
+function onImageError(e) {
+  if (e.target) {
+    e.target.style.display = 'none'
+  }
+}
 
 function loadHtml2Pdf() {
   return new Promise((resolve, reject) => {
@@ -199,4 +244,10 @@ onMounted(async () => {
 .file-meta{font-size:12px;color:#94a3b8;margin-top:2px}
 .file-download-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0}
 .file-download-btn:hover{background:#1d4ed8}
+/* 图片网格 */
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.image-item{display:flex;flex-direction:column;align-items:center;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;transition:all .2s;cursor:pointer}
+.image-item:hover{border-color:#93c5fd;box-shadow:0 4px 12px rgba(37,99,235,.12)}
+.image-thumb{width:100%;height:140px;object-fit:cover;display:block}
+.image-name{font-size:12px;color:#64748b;padding:6px 8px;text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>

@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -192,6 +193,54 @@ public class DatabaseInitializer implements CommandLineRunner {
                     UNIQUE(module, item_id)
                 )
             """);
+
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id TEXT PRIMARY KEY,
+                    username TEXT NOT NULL UNIQUE,
+                    password TEXT NOT NULL,
+                    role TEXT NOT NULL DEFAULT 'USER',
+                    status TEXT NOT NULL DEFAULT 'PENDING',
+                    created_at TEXT DEFAULT ''
+                )
+            """);
+
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS user_tokens (
+                    token TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    expires_at TEXT NOT NULL
+                )
+            """);
+
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS pending_changes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    module TEXT NOT NULL,
+                    operation TEXT NOT NULL,
+                    entity_id INTEGER,
+                    payload TEXT,
+                    submitter_id INTEGER NOT NULL,
+                    submitter_name TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'PENDING',
+                    created_at TEXT DEFAULT '',
+                    approved_at TEXT DEFAULT '',
+                    approved_by TEXT DEFAULT ''
+                )
+            """);
+
+            // 初始化超级管理员账号（默认密码: admin123）
+            try {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                byte[] hash = md.digest("admin123".getBytes("UTF-8"));
+                StringBuilder sb = new StringBuilder();
+                for (byte b : hash) sb.append(String.format("%02x", b));
+                String hashedPwd = sb.toString();
+                stmt.execute("INSERT OR IGNORE INTO users (id,username,password,role,status,created_at) VALUES ('user_super_admin','admin','" + hashedPwd + "','SUPER_ADMIN','APPROVED',datetime('now','localtime'))");
+            } catch (Exception e) {
+                System.out.println("[NetConfig] 超级管理员初始化失败: " + e.getMessage());
+            }
 
             migrateOldCommandsTable(stmt);
 
