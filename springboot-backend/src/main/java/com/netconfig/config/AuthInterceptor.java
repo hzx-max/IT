@@ -55,9 +55,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 文件上传接口需要鉴权
+        // 文件上传接口 - 允许ADMIN和SUPER_ADMIN（用于审核流程中上传图片）
         if (path.startsWith("/api/upload")) {
-            return checkAuth(request, response);
+            return checkAuthWithoutSuperAdmin(request, response);
         }
 
         // 写操作需要管理员鉴权

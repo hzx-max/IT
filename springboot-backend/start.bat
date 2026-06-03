@@ -4,7 +4,7 @@ cd /d "%~dp0"
 echo ========================================
 echo   NetConfig SpringBoot Backend
 echo   端口: 8080
-echo   数据库: netconfig.db
+echo   数据库: date.db
 echo ========================================
 echo.
 echo 前置条件:

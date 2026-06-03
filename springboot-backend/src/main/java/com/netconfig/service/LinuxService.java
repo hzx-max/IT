@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +34,9 @@ public class LinuxService {
     @Transactional
     public LinuxDTO create(LinuxDTO dto) {
         Linux entity = toEntity(dto);
+        if (entity.getId() == null || entity.getId().isEmpty()) {
+            entity.setId("linux_" + System.currentTimeMillis() + "_" + (char) ('a' + new Random().nextInt(26)));
+        }
         entity.setCreatedAt(JsonUtil.nowLocal());
         Linux saved = linuxRepository.save(entity);
         return toDTO(saved);

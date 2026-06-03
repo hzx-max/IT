@@ -24,13 +24,13 @@ public class PendingChange {
     private String operation; // 操作: CREATE, UPDATE, DELETE
 
     @Column(name = "entity_id")
-    private Long entityId; // 实体ID (UPDATE/DELETE时需要)
+    private String entityId; // 实体ID (UPDATE/DELETE时需要，实体ID为String类型)
 
     @Column(columnDefinition = "TEXT")
     private String payload; // 请求体JSON
 
     @Column(name = "submitter_id", nullable = false)
-    private Long submitterId;
+    private String submitterId;
 
     @Column(name = "submitter_name", nullable = false)
     private String submitterName;

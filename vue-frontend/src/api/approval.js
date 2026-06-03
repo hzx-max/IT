@@ -22,7 +22,7 @@ export async function submitWithApproval(module, operation, payload, entityId, d
         operation,
         entityId: entityId || null,
         payload,
-        submitterId: parseInt(userId) || 0,
+        submitterId: userId || '',
         submitterName: username || 'unknown'
       })
       return { ok: true, message: '已提交审核，等待超级管理员确认' }

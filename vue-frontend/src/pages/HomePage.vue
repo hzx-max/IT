@@ -1,25 +1,28 @@
 <template>
   <div class="home-page">
     <div class="home-bg"></div>
+
+    <!-- 右上角登录/退出 -->
+    <div class="home-auth-bar">
+      <template v-if="loggedIn">
+        <span class="auth-user-info">
+          <span class="auth-avatar">{{ username.charAt(0).toUpperCase() }}</span>
+          <span class="auth-username">{{ username }}</span>
+          <span class="auth-role" :class="role === 'SUPER_ADMIN' ? 'role-super' : 'role-admin'">{{ role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}</span>
+        </span>
+        <router-link v-if="role === 'SUPER_ADMIN'" to="/super-admin" class="auth-btn auth-btn-admin">管理员管理</router-link>
+        <button class="auth-btn auth-btn-outline" @click="onLogout">退出登录</button>
+      </template>
+      <template v-else>
+        <router-link to="/login" class="auth-btn auth-btn-primary">管理员登录</router-link>
+        <router-link to="/register" class="auth-btn auth-btn-outline">注册管理员</router-link>
+      </template>
+    </div>
+
     <div class="home-content">
       <div class="home-header">
         <h1 class="home-title">IT运维学习平台</h1>
         <p class="home-subtitle">涵盖网络命令、故障排查、桌面运维、Linux系统、Office办公、AI运维等IT运维核心知识</p>
-      </div>
-
-      <div class="home-auth-bar">
-        <template v-if="loggedIn">
-          <span class="auth-user-info">
-            <span class="auth-avatar">{{ username.charAt(0).toUpperCase() }}</span>
-            <span class="auth-username">{{ username }}</span>
-            <span class="auth-role" :class="role === 'SUPER_ADMIN' ? 'role-super' : 'role-admin'">{{ role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}</span>
-          </span>
-          <button class="auth-btn auth-btn-outline" @click="onLogout">退出登录</button>
-        </template>
-        <template v-else>
-          <router-link to="/login" class="auth-btn auth-btn-primary">管理员登录</router-link>
-          <router-link to="/register" class="auth-btn auth-btn-outline">注册管理员</router-link>
-        </template>
       </div>
 
       <div class="home-grid">
@@ -259,7 +262,7 @@ onUnmounted(() => {
 .home-header{text-align:center;margin-bottom:56px}
 .home-title{font-size:40px;font-weight:800;color:#0f172a;margin:20px 0 12px;letter-spacing:-.5px}
 .home-subtitle{font-size:18px;color:#64748b;max-width:560px;margin:0 auto;line-height:1.7}
-.home-auth-bar{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-bottom:40px;padding:0 4px}
+.home-auth-bar{position:fixed;top:16px;right:24px;z-index:100;display:flex;align-items:center;gap:12px}
 .home-auth-links{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px}
 .auth-user-info{display:flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .auth-avatar{width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
@@ -272,6 +275,8 @@ onUnmounted(() => {
 .auth-btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
 .auth-btn-outline{background:#fff;color:#2563eb;border-color:#2563eb}
 .auth-btn-outline:hover{background:#2563eb;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.2)}
+.auth-btn-admin{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:#7c3aed}
+.auth-btn-admin:hover{background:linear-gradient(135deg,#6d28d9,#5b21b6);box-shadow:0 4px 12px rgba(124,58,237,.35)}
 .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:60px}
 .home-card{background:#fff;border-radius:16px;padding:28px 24px;border:1.5px solid #e2e8f0;cursor:pointer;transition:all .35s ease;text-decoration:none;position:relative;overflow:hidden}
 .home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));opacity:0;transition:opacity .3s ease}
@@ -306,7 +311,7 @@ onUnmounted(() => {
 .vertical-chart-container{display:flex;align-items:stretch;justify-content:space-around;gap:16px;height:200px;padding-bottom:8px}
 .vertical-chart-bar{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:100px}
 .vertical-chart-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;position:relative}
-.vertical-chart-fill{width:48px;min-height:4px;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;transition:height .8s ease;position:absolute;bottom:0}
+.vertical-chart-fill{width:48px;min-height:24px;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;transition:height .8s ease;position:absolute;bottom:0}
 .vertical-chart-val{font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
 .vertical-chart-label{font-size:12px;color:#64748b;font-weight:500;text-align:center;white-space:nowrap}
 .stats-row{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:32px}

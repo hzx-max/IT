@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +32,9 @@ public class FaultService {
     @Transactional
     public FaultDTO create(FaultDTO dto) {
         Fault entity = toEntity(dto);
+        if (entity.getId() == null || entity.getId().isEmpty()) {
+            entity.setId("fault_" + System.currentTimeMillis() + "_" + (char) ('a' + new Random().nextInt(26)));
+        }
         entity.setCreatedAt(JsonUtil.nowLocal());
         Fault saved = faultRepository.save(entity);
         return toDTO(saved);

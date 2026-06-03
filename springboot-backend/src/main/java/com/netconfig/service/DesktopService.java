@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +32,9 @@ public class DesktopService {
     @Transactional
     public DesktopDTO create(DesktopDTO dto) {
         Desktop entity = toEntity(dto);
+        if (entity.getId() == null || entity.getId().isEmpty()) {
+            entity.setId("desktop_" + System.currentTimeMillis() + "_" + (char) ('a' + new Random().nextInt(26)));
+        }
         entity.setCreatedAt(JsonUtil.nowLocal());
         Desktop saved = desktopRepository.save(entity);
         return toDTO(saved);

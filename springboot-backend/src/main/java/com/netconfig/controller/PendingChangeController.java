@@ -36,9 +36,9 @@ public class PendingChangeController {
         String module = (String) body.get("module");
         String operation = (String) body.get("operation");
 
-        Long entityId = null;
+        String entityId = null;
         if (body.get("entityId") != null) {
-            entityId = ((Number) body.get("entityId")).longValue();
+            entityId = String.valueOf(body.get("entityId"));
         }
 
         Object rawPayload = body.get("payload");
@@ -53,7 +53,7 @@ public class PendingChangeController {
             return ApiResponse.error("module and operation are required");
         }
 
-        Long submitterId = ((Number) body.get("submitterId")).longValue();
+        String submitterId = (String) body.get("submitterId");
         String submitterName = (String) body.get("submitterName");
 
         PendingChange change = new PendingChange();
@@ -150,7 +150,7 @@ public class PendingChangeController {
             payload = objectMapper.readValue(payloadJson, Map.class);
         }
 
-        String idStr = change.getEntityId() != null ? change.getEntityId().toString() : (payload != null ? (String) payload.get("id") : null);
+        String idStr = change.getEntityId() != null ? change.getEntityId() : (payload != null ? (String) payload.get("id") : null);
 
         switch (operation) {
             case "CREATE":

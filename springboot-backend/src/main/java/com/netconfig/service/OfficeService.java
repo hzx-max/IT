@@ -31,6 +31,9 @@ public class OfficeService {
     @Transactional
     public OfficeDTO create(OfficeDTO dto) {
         Office entity = toEntity(dto);
+        if (entity.getId() == null || entity.getId().isEmpty()) {
+            entity.setId("office_" + System.currentTimeMillis() + "_" + new Random().nextInt(1000));
+        }
         entity.setCreatedAt(JsonUtil.nowLocal());
         Office saved = officeRepository.save(entity);
         return toDTO(saved);

@@ -20,9 +20,9 @@ target/
 Thumbs.db
 
 # Database (contains user data)
-netconfig.db
-netconfig.db-shm
-netconfig.db-wal
+date.db
+date.db-shm
+date.db-wal
 
 # Uploaded files
 springboot-backend/uploads/

@@ -10,15 +10,18 @@
       v-model:catValue="catFilter" :catMap="dynCatMap" />
 
     <div class="table-wrap mt-[18px]">
-      <table class="w-full border-collapse text-sm">
+      <table class="w-full border-collapse text-sm table-fixed">
+        <colgroup>
+          <col style="width:3%"><col style="width:5%"><col style="width:35%"><col style="width:14%"><col style="width:18%"><col style="width:25%">
+        </colgroup>
         <thead>
           <tr class="bg-slate-50">
-            <th class="sticky-th px-4 py-3.5 text-center w-10"><input type="checkbox" :checked="isAllSelected" @change="toggleAll" class="w-[18px] h-[18px] accent-blue-600 cursor-pointer"></th>
-            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider w-[60px]">序号</th>
+            <th class="sticky-th px-2 py-3.5 text-center"><input type="checkbox" :checked="isAllSelected" @change="toggleAll" class="w-[18px] h-[18px] accent-blue-600 cursor-pointer"></th>
+            <th class="sticky-th px-2 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">序号</th>
             <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">标题</th>
-            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">分类</th>
-            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider w-[130px]">创建时间</th>
-            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider w-[180px]">操作</th>
+            <th class="sticky-th px-2 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">分类</th>
+            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">创建时间</th>
+            <th class="sticky-th px-4 py-3.5 text-center text-slate-500 font-semibold text-xs uppercase tracking-wider">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -26,10 +29,10 @@
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 opacity-40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><br>没有匹配的结果
           </td></tr>
           <tr v-for="(item, idx) in filtered" :key="item.id" class="border-t border-slate-100 hover:bg-blue-50 transition-all duration-150" :class="{'bg-blue-50': selected.includes(item.id)}">
-            <td class="px-4 py-3 text-center"><input type="checkbox" :checked="selected.includes(item.id)" @change="toggleItem(item.id)" class="w-[18px] h-[18px] accent-blue-600 cursor-pointer"></td>
-            <td class="px-4 py-3 text-center text-slate-600">{{ idx + 1 }}</td>
+            <td class="px-2 py-3 text-center"><input type="checkbox" :checked="selected.includes(item.id)" @change="toggleItem(item.id)" class="w-[18px] h-[18px] accent-blue-600 cursor-pointer"></td>
+            <td class="px-2 py-3 text-center text-slate-600">{{ idx + 1 }}</td>
             <td class="px-4 py-3 text-center font-medium">{{ item.title }}</td>
-            <td class="px-4 py-3 text-center text-slate-600">{{ item.category || '未分类' }}</td>
+            <td class="px-2 py-3 text-center text-slate-600">{{ item.category || '未分类' }}</td>
             <td class="px-4 py-3 text-center text-slate-500 text-xs">{{ formatTime(item.createdAt) }}</td>
             <td class="px-4 py-3 text-center">
               <select @change="handleAction($event, item.id)" class="action-select">

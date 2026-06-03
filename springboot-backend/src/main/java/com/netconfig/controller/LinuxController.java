@@ -32,7 +32,7 @@ public class LinuxController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<LinuxDTO>> create(@RequestBody LinuxDTO dto) {
-        if (dto.getId() == null || dto.getTitle() == null) {
+        if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing required fields"));
         }
         LinuxDTO created = linuxService.create(dto);

@@ -34,9 +34,9 @@ const isActive = (path) => {
 <style scoped>
 .nav-dd-toggle{
   display:flex;align-items:center;gap:10px;width:100%;padding:10px 22px;border:none;background:none;
-  color:#475569;font-size:15px;cursor:pointer;text-align:left;transition:all .25s ease;font-weight:600;letter-spacing:.3px
+  color:#94a3b8;font-size:15px;cursor:pointer;text-align:left;transition:all .25s ease;font-weight:600;letter-spacing:.3px
 }
-.nav-dd-toggle:hover{color:#1e293b;background:rgba(37,99,235,.06)}
+.nav-dd-toggle:hover{color:#e2e8f0;background:rgba(255,255,255,.03)}
 .nav-dd-toggle.active{color:#f97316}
 .nav-dd-toggle svg{flex-shrink:0;opacity:.7;transition:all .15s ease}
 .nav-dd-toggle:hover svg,.nav-dd-toggle.active svg{opacity:1}
@@ -46,10 +46,10 @@ const isActive = (path) => {
 .nav-dd-menu.open{max-height:300px}
 .nav-btn{
   display:flex;align-items:center;gap:12px;width:100%;padding:10px 22px;border:none;background:none;
-  color:#64748b;font-size:15px;cursor:pointer;text-align:left;text-decoration:none;transition:all .25s ease;
+  color:#7c8ca1;font-size:15px;cursor:pointer;text-align:left;text-decoration:none;transition:all .25s ease;
   border-left:3px solid transparent;position:relative;font-weight:500
 }
-.nav-btn:hover{background:rgba(37,99,235,.08);color:#334155;border-left-color:rgba(37,99,235,.5)}
-.nav-btn.active{background:rgba(37,99,235,.12);color:#1e293b;border-left-color:#2563eb;font-weight:600}
+.nav-btn:hover{background:rgba(255,255,255,.05);color:#cbd5e1;border-left-color:rgba(37,99,235,.5)}
+.nav-btn.active{background:rgba(37,99,235,.15);color:#fff;border-left-color:#2563eb;font-weight:600}
 .nav-btn.active::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:#2563eb;border-radius:3px 0 0 3px;box-shadow:0 0 8px rgba(37,99,235,.5)}
 </style>
