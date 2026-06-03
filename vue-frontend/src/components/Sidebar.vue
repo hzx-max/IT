@@ -1,31 +1,31 @@
 <template>
   <nav class="sidebar fixed top-0 left-0 w-[240px] h-screen z-50 flex flex-col"
-       style="background:linear-gradient(180deg,#0f172a 0%,#1a2332 100%)">
-    <router-link to="/" class="px-[22px] py-6 border-b border-white/[.06] flex items-center no-underline">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2.5 text-blue-400 shrink-0">
+       style="background:linear-gradient(180deg,#e0f0ff 0%,#d0e4f8 50%,#c5ddf5 100%)">
+    <router-link to="/" class="px-[22px] py-6 border-b border-slate-300/40 flex items-center no-underline">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2.5 text-blue-600 shrink-0">
         <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
         <line x1="8" y1="21" x2="16" y2="21"/>
         <line x1="12" y1="17" x2="12" y2="21"/>
       </svg>
-      <span class="text-lg text-slate-200 whitespace-nowrap font-bold tracking-tight">IT运维学习平台</span>
+      <span class="text-lg text-slate-800 whitespace-nowrap font-bold tracking-tight">IT运维学习平台</span>
     </router-link>
 
     <div class="flex-1 overflow-y-auto overflow-x-hidden py-2">
       <NavDropdown v-for="m in filteredMenus" :key="m.name" :open="openDropdown===m.name" :icon="m.icon" :label="m.label" :items="m.items" @toggle="onToggle(m.name)" />
     </div>
 
-    <!-- 快捷键提示 -->
-    <div class="mt-auto px-[22px] py-4 border-t border-white/[.08] text-xs text-slate-500 shrink-0 bg-black/[.15]">
-      <kbd class="inline-block px-2 py-0.5 bg-blue-900/40 border border-blue-500/40 rounded text-xs text-blue-300 mx-0.5 font-semibold">ESC</kbd> 返回
-      <kbd class="inline-block px-2 py-0.5 bg-blue-900/40 border border-blue-500/40 rounded text-xs text-blue-300 mx-0.5 font-semibold">Ctrl+K</kbd> 搜索
-    </div>
-
     <!-- 超级管理员入口 -->
-    <div v-if="isSuperAdmin" class="px-[22px] py-2 border-t border-white/[.06] bg-black/[.15]">
-      <router-link to="/super-admin" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-purple-300 hover:bg-purple-500/10 transition no-underline">
+    <div v-if="isSuperAdmin" class="px-[22px] py-2 border-t border-slate-300/40 bg-slate-200/30">
+      <router-link to="/super-admin" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-purple-700 hover:bg-purple-100 transition no-underline">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
         <span>管理员管理</span>
       </router-link>
+    </div>
+
+    <!-- 快捷键提示 -->
+    <div class="mt-auto px-[22px] py-4 border-t border-slate-300/40 text-xs text-slate-600 shrink-0 bg-slate-200/40">
+      <kbd class="inline-block px-2 py-0.5 bg-blue-200 border border-blue-300 rounded text-xs text-blue-700 mx-0.5 font-semibold">ESC</kbd> 返回
+      <kbd class="inline-block px-2 py-0.5 bg-blue-200 border border-blue-300 rounded text-xs text-blue-700 mx-0.5 font-semibold">Ctrl+K</kbd> 搜索
     </div>
   </nav>
 </template>
@@ -120,6 +120,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.sidebar { border-right: 1px solid rgba(255,255,255,.04); box-shadow: 3px 0 16px rgba(0,0,0,.2); }
+.sidebar { border-right: 1px solid rgba(0,0,0,.06); box-shadow: 3px 0 16px rgba(0,0,0,.06); }
 @media (max-width: 768px) { .sidebar { display: none; } }
 </style>
