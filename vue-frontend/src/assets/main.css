@@ -41,3 +41,43 @@ body{
 
 /* ===== 代码块 ===== */
 .code-block{background:#0f172a;color:#e2e8f0;padding:14px 18px;border-radius:var(--radius-xs);font-size:15px;overflow-x:auto;white-space:pre;line-height:1.7}
+
+/* ========================================
+   移动端增强（追加，不影响 PC 端）
+   ======================================== */
+
+/* ── 消除移动端300ms点击延迟 ── */
+html{touch-action:manipulation}
+
+/* ── input/textarea 字号≥16px 防止 iOS 自动缩放 ── */
+input,textarea,select{font-size:16px}
+
+/* ── 禁止 iOS 长按弹出菜单 ── */
+a,button,img,svg,.card{-webkit-touch-callout:none}
+
+/* ── 移动端移除 hover 效果 ── */
+@media (hover:none){
+  .home-card:hover,.cmd-card:hover,.stat-card:hover{border-color:var(--border);box-shadow:var(--shadow-sm);transform:none}
+  .home-card:hover::before,.cmd-card:hover::before{opacity:0}
+  .cmd-card:hover h3{color:var(--text)}
+  .home-card:active,.cmd-card:active,.stat-card:active{transform:scale(.97);transition:transform .1s ease}
+}
+
+/* ── 减弱动画偏好 ── */
+@media (prefers-reduced-motion:reduce){
+  .page-enter-active{animation:none}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* ── 通用移动端卡片栅格 ── */
+@media (max-width: 640px) {
+  .card-grid { grid-template-columns: 1fr; gap: 14px; }
+  .card-grid-2 { grid-template-columns: 1fr; gap: 14px; }
+  .card-grid-3 { grid-template-columns: 1fr; gap: 14px; }
+}
+
+/* ── 移动端 Top Bar 通用 ── */
+@media (max-width: 640px) {
+  .top-bar { margin-bottom: 16px; }
+  .top-bar h2 { font-size: 22px; }
+}

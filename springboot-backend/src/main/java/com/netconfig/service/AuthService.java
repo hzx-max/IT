@@ -58,6 +58,8 @@ public class AuthService {
 
         Map<String, String> result = new HashMap<>();
         result.put("token", token);
+        result.put("id", user.getId());
+        result.put("userId", user.getId());
         result.put("role", user.getRole());
         result.put("username", user.getUsername());
         return result;

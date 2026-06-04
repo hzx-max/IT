@@ -13,7 +13,7 @@
     </button>
     <div class="nav-dd-menu" :class="{ open: open }">
       <router-link v-for="item in items" :key="item.path" :to="item.path"
-        class="nav-btn" :class="{ active: isActive(item.path) }">
+        class="nav-btn" :class="{ active: isActive(item.path) }" @click="$emit('navigate')">
         <span>{{ item.label }}</span>
       </router-link>
     </div>
@@ -23,7 +23,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 defineProps({ icon: String, label: String, items: Array, open: Boolean })
-const emit = defineEmits(['toggle'])
+const emit = defineEmits(['toggle', 'navigate'])
 const route = useRoute()
 const isActive = (path) => {
   if (path === '/cmd' && route.path.startsWith('/cmd')) return route.path === '/cmd'

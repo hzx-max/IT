@@ -63,6 +63,7 @@ async function onLogin() {
     localStorage.setItem('token', data.token)
     localStorage.setItem('username', data.username)
     localStorage.setItem('role', data.role)
+    localStorage.setItem('userId', data.id || data.userId || '')
     window.dispatchEvent(new StorageEvent('storage', { key: 'token', newValue: data.token }))
     router.push('/')
   } catch (e) {

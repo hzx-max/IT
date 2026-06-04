@@ -1,5 +1,6 @@
 <template>
   <nav class="sidebar fixed top-0 left-0 w-[240px] h-screen z-50 flex flex-col"
+       :class="{ 'sidebar-drawer': mobileOpen }"
        style="background:linear-gradient(180deg,#0f172a 0%,#1a2332 100%)">
     <router-link to="/" class="px-[22px] py-6 border-b border-white/[.06] flex items-center no-underline">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2.5 text-blue-400 shrink-0">
@@ -11,7 +12,7 @@
     </router-link>
 
     <div class="flex-1 overflow-y-auto overflow-x-hidden py-2">
-      <NavDropdown v-for="m in filteredMenus" :key="m.name" :open="openDropdown===m.name" :icon="m.icon" :label="m.label" :items="m.items" @toggle="onToggle(m.name)" />
+      <NavDropdown v-for="m in filteredMenus" :key="m.name" :open="openDropdown===m.name" :icon="m.icon" :label="m.label" :items="m.items" @toggle="onToggle(m.name)" @navigate="onNavigate" />
     </div>
 
     <!-- 快捷键提示 -->
@@ -26,6 +27,11 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import NavDropdown from './NavDropdown.vue'
+
+const props = defineProps({
+  mobileOpen: { type: Boolean, default: false }
+})
+const emit = defineEmits(['closeMobile'])
 
 const route = useRoute()
 const openDropdown = ref('')
@@ -84,6 +90,11 @@ function onToggle(name) {
   openDropdown.value = openDropdown.value === name ? '' : name
 }
 
+function onNavigate() {
+  // 移动端导航后关闭侧边栏
+  emit('closeMobile')
+}
+
 function onStorageChange(e) {
   if (e.key === 'token' || e.key === null) {
     updateAuthState()
@@ -111,6 +122,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.sidebar { border-right: 1px solid rgba(255,255,255,.04); box-shadow: 3px 0 16px rgba(0,0,0,.2); }
-@media (max-width: 768px) { .sidebar { display: none; } }
+.sidebar {
+  border-right: 1px solid rgba(255,255,255,.04);
+  box-shadow: 3px 0 16px rgba(0,0,0,.2);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+/* PC 端固定不变（默认行为） */
+
+/* 移动端抽屉模式 */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.sidebar-drawer {
+    transform: translateX(0);
+  }
+}
 </style>

@@ -25,6 +25,7 @@ http.interceptors.response.use(
         localStorage.removeItem('token')
         localStorage.removeItem('username')
         localStorage.removeItem('role')
+        localStorage.removeItem('userId')
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'
         }

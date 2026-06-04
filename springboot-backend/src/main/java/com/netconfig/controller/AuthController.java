@@ -33,7 +33,12 @@ public class AuthController {
         if (user == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("用户名已存在"));
         }
-        return ResponseEntity.ok(ApiResponse.success(Map.of("status", user.getStatus(), "message", "注册成功，等待超级管理员审核")));
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "status", user.getStatus(),
+                "message", "注册成功，等待超级管理员审核"
+        )));
     }
 
     @PostMapping("/api/auth/login")

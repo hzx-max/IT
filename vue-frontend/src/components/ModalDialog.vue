@@ -51,4 +51,10 @@ function onCancel() {
 <style scoped>
 .animate-modal-slide { animation: modalSlide .25s ease; }
 @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* 移动端弹窗适配 */
+@media (max-width: 640px) {
+  .min-w-\[340px\] { min-width: auto; width: calc(100vw - 32px); margin: 0 16px; }
+  .max-w-\[460px\] { max-width: 100%; }
+  .p-7 { padding: 20px; }
+}
 </style>

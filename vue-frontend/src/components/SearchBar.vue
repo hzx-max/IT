@@ -149,4 +149,10 @@ onBeforeUnmount(() => {
 }
 .search-btn:hover{background:#1d4ed8;border-color:#1d4ed8}
 .search-btn:active{background:#1e40af;border-color:#1e40af}
+/* 移动端搜索栏 */
+@media (max-width: 640px) {
+  .search-wrap { min-width: 100%; }
+  .search-select { min-width: auto; flex: 1; }
+  .search-btn { flex-shrink: 0; }
+}
 </style>

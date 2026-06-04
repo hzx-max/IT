@@ -22,4 +22,8 @@ watch(() => props.visible, (v) => {
 <style scoped>
 .animate-toast { animation: toastIn .35s cubic-bezier(.4,0,.2,1); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+/* 移动端安全区 */
+@media (max-width: 768px) {
+  .fixed.bottom-7 { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); right: 16px; left: 16px; }
+}
 </style>
