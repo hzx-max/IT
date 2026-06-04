@@ -157,8 +157,9 @@ const detailRouteMap = {
 }
 
 function getItemRoute(module, itemId) {
+  if (!module || !itemId) return '/'
   const fn = detailRouteMap[module]
-  return fn ? fn(itemId) : '/'
+  return fn ? fn(encodeURIComponent(itemId)) : '/'
 }
 
 function getModuleLabel(m) { return moduleLabels[m] || m }

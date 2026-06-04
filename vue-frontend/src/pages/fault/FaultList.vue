@@ -18,11 +18,9 @@
         <div class="cmd-card-body">
           <h3>{{ item.title }}</h3>
           <p class="symptom-text">{{ truncate(item.symptom, 80) }}</p>
-          <div class="mt-1.5 flex gap-1.5 flex-wrap">
+          <div class="tag-row mt-auto pt-2">
             <span class="tag-cat">{{ item.category }}</span>
-          </div>
-          <div class="mt-auto pt-2 flex justify-start">
-            <span v-if="item.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+            <span v-if="item.createdAt" class="tag-time">{{ formatDate(item.createdAt) }}</span>
           </div>
         </div>
       </div>
@@ -35,7 +33,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
-import { apiFaults, formatTime, apiClicks } from '../../api/index.js'
+import { apiFaults, formatDate, apiClicks } from '../../api/index.js'
 
 const router = useRouter()
 
@@ -90,6 +88,7 @@ onMounted(async () => {
 .cmd-card:hover h3{color:var(--primary)}
 .tag-id{font-size:12px;padding:2px 8px;border-radius:4px;background:#eef2ff;color:#4f46e5;font-family:'Cascadia Code','Fira Code',Consolas,monospace}
 .symptom-text{font-size:14px;color:#64748b;line-height:1.5;margin:0}
-.tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;display:inline-block}
-.tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;display:inline-block}
+.tag-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0;width:100%;max-width:100%}
+.tag-row .tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;white-space:nowrap;flex-shrink:0}
 </style>

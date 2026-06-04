@@ -38,6 +38,17 @@ export function getVendorName(k, map) { return (map || VENDOR_MAP)[k]?.n || k }
 export function getVendorColor(k, map) { return (map || VENDOR_MAP)[k]?.c || '#666' }
 export function getCatLabel(k, map) { return (map || CAT_MAP)[k] || k }
 
+export function formatDate(ts) {
+  if (!ts) return ''
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ts)) return ts
+  try {
+    const d = new Date(ts)
+    if (isNaN(d.getTime())) return ts
+    const pad = n => String(n).padStart(2, '0')
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+  } catch { return ts }
+}
+
 export function formatTime(ts) {
   if (!ts) return ''
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(ts)) return ts

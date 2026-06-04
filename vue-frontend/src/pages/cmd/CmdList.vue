@@ -21,15 +21,13 @@
         <div class="cmd-card-body">
           <h3>{{ item.title }}</h3>
           <p v-if="item.desc" class="cmd-desc">{{ truncate(item.desc, 60) }}</p>
-          <div class="mt-1.5 flex gap-1.5 flex-wrap">
-            <span v-for="cfg in (item.configs||[]).slice(0,3)" :key="cfg.vendor"
+          <div class="tag-row mt-auto pt-2">
+            <span class="tag-cat">{{ getCatLabel(item.cat, CAT_MAP) }}</span>
+            <span v-for="cfg in (item.configs||[]).slice(0,2)" :key="cfg.vendor"
               class="tag-vendor" :style="{ background: getVendorColor(cfg.vendor)+'15', color: getVendorColor(cfg.vendor) }">
               {{ getVendorName(cfg.vendor) }}
             </span>
-            <span class="tag-cat">{{ getCatLabel(item.cat, CAT_MAP) }}</span>
-          </div>
-          <div class="mt-auto pt-2 flex justify-start">
-            <span v-if="item.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+            <span v-if="item.createdAt" class="tag-time">{{ formatDate(item.createdAt) }}</span>
           </div>
         </div>
       </div>
@@ -43,7 +41,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
 import CategoryStrip from '../../components/CategoryStrip.vue'
-import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiTopics, apiClicks } from '../../api/index.js'
+import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatDate, apiTopics, apiClicks } from '../../api/index.js'
 
 const router = useRouter()
 
@@ -111,7 +109,8 @@ onMounted(async () => {
 .cmd-card h3{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text);transition:color .2s}
 .cmd-card:hover h3{color:var(--primary)}
 .cmd-desc{font-size:14px;color:#64748b;line-height:1.5;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tag-vendor{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;transition:var(--transition-fast);display:inline-block}
-.tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;display:inline-block}
-.tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;display:inline-block}
+.tag-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0;width:100%;max-width:100%}
+.tag-row .tag-vendor{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;transition:var(--transition-fast);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;white-space:nowrap;flex-shrink:0}
 </style>

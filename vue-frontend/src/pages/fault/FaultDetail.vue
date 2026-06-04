@@ -2,7 +2,7 @@
   <MainLayout>
     <div class="max-w-[960px] mx-auto export-pdf-area">
       <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[30px] font-bold">{{ item?.title || '加载中...' }}</h2>
+        <h2 class="text-[28px] font-bold">{{ item?.title || '加载中...' }}</h2>
         <div class="flex gap-2.5 flex-wrap items-center">
           <button class="btn btn-primary text-sm" @click="$router.push('/fault/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
           <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
@@ -119,8 +119,8 @@ onMounted(async () => {
 <style scoped>
 .detail-section{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
 .detail-section:hover{box-shadow:var(--shadow-md)}
-.detail-label{font-size:24px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.detail-value{font-size:18px;font-family:"Times New Roman","宋体",SimSun,serif;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.detail-label{font-size:22px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-value{font-size:18px;font-family:"Times New Roman","宋体",SimSun,serif;color:var(--text);line-height:1.8;white-space:pre-wrap;text-indent:2em}
 .detail-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
 .tag-time{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f0f9ff;color:#2563eb;border:1.5px solid #bfdbfe;display:inline-block}
 .tag-cat{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}

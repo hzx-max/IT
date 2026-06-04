@@ -20,15 +20,13 @@
       <div v-for="item in filtered" :key="item.id" class="cmd-card" @click="handleClick(item)">
         <div class="cmd-card-body">
           <h3>{{ item.title }}</h3>
-          <div class="mt-1.5 flex gap-1.5 flex-wrap">
+          <div class="tag-row mt-auto pt-2">
+            <span v-if="item.cat" class="tag-cat">{{ getCatLabel(item.cat, LINUX_CAT_MAP) }}</span>
             <span v-if="item.vendor" class="tag-vendor"
               :style="{ background: getVendorColor(item.vendor, LINUX_VENDOR_MAP)+'15', color: getVendorColor(item.vendor, LINUX_VENDOR_MAP) }">
               {{ getVendorName(item.vendor, LINUX_VENDOR_MAP) }}
             </span>
-            <span v-if="item.cat" class="tag-cat">{{ getCatLabel(item.cat, LINUX_CAT_MAP) }}</span>
-          </div>
-          <div class="mt-auto pt-2 flex justify-start">
-            <span v-if="item.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+            <span v-if="item.createdAt" class="tag-time">{{ formatDate(item.createdAt) }}</span>
           </div>
         </div>
       </div>
@@ -42,7 +40,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
 import CategoryStrip from '../../components/CategoryStrip.vue'
-import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiClicks } from '../../api/index.js'
+import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatDate, apiClicks } from '../../api/index.js'
 
 const router = useRouter()
 
@@ -104,7 +102,8 @@ onMounted(async () => {
 .cmd-card-body{padding:16px 20px 20px;display:flex;flex-direction:column;height:100%}
 .cmd-card h3{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text);transition:color .2s}
 .cmd-card:hover h3{color:var(--primary)}
-.tag-vendor{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;transition:var(--transition-fast);display:inline-block}
-.tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;display:inline-block}
-.tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;display:inline-block}
+.tag-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0;width:100%;max-width:100%}
+.tag-row .tag-vendor{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;transition:var(--transition-fast);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;white-space:nowrap;flex-shrink:0}
 </style>

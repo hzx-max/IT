@@ -9,7 +9,7 @@
       module="fault-admin"
       v-model:catValue="catFilter" :catMap="faultCatMap" />
 
-    <div class="table-wrap mt-[18px]">
+    <div class="table-wrap mt-[18px]" style="padding-bottom:120px">
       <table class="w-full border-collapse text-sm table-fixed">
         <colgroup>
           <col style="width:3%"><col style="width:5%"><col style="width:35%"><col style="width:14%"><col style="width:18%"><col style="width:25%">
@@ -161,7 +161,7 @@ onMounted(loadData)
 .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
 .top-bar h2{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.3px;position:relative;padding-bottom:4px}
 .top-bar h2::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));border-radius:2px}
-.table-wrap{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden}
+.table-wrap{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:visible}
 .sticky-th{position:sticky;top:0;z-index:10;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
 .action-select{padding:6px 30px 6px 12px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;background:var(--bg-white);color:var(--text);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:var(--transition-fast)}
 .action-select:hover{border-color:var(--primary)}

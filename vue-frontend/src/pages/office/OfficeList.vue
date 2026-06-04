@@ -21,11 +21,9 @@
         <div class="cmd-card-body">
           <h3>{{ item.title }}</h3>
           <p v-if="item.desc" class="office-desc">{{ truncate(item.desc, 60) }}</p>
-          <div class="mt-1.5 flex gap-1.5 flex-wrap">
+          <div class="tag-row mt-auto pt-2">
             <span v-if="item.cat" class="tag-cat">{{ getCatLabel(item.cat, OFFICE_CAT_MAP) }}</span>
-          </div>
-          <div class="mt-auto pt-2 flex justify-start">
-            <span v-if="item.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+            <span v-if="item.createdAt" class="tag-time">{{ formatDate(item.createdAt) }}</span>
           </div>
         </div>
       </div>
@@ -39,7 +37,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
 import CategoryStrip from '../../components/CategoryStrip.vue'
-import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, getCatLabel, formatTime, apiOffice, apiClicks } from '../../api/index.js'
+import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, getCatLabel, formatDate, apiOffice, apiClicks } from '../../api/index.js'
 
 const router = useRouter()
 
@@ -107,6 +105,7 @@ onMounted(async () => {
 .cmd-card h3{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text);transition:color .2s}
 .cmd-card:hover h3{color:var(--primary)}
 .office-desc{font-size:14px;color:#64748b;line-height:1.5;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;display:inline-block}
-.tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;display:inline-block}
+.tag-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0;width:100%;max-width:100%}
+.tag-row .tag-cat{font-size:13px;padding:3px 10px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}
+.tag-row .tag-time{font-size:12px;padding:2px 8px;border-radius:12px;background:#f1f5f9;color:#64748b;white-space:nowrap;flex-shrink:0}
 </style>
