@@ -2,7 +2,7 @@ package com.netconfig.controller;
 
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.entity.ClickRecord;
-import com.netconfig.repository.ClickRecordRepository;
+import com.netconfig.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +15,12 @@ import java.util.*;
 public class ClickController {
 
     private final ClickRecordRepository clickRecordRepository;
+    private final CommandTopicRepository commandTopicRepository;
+    private final FaultRepository faultRepository;
+    private final DesktopRepository desktopRepository;
+    private final LinuxRepository linuxRepository;
+    private final OfficeRepository officeRepository;
+    private final AiTopicRepository aiTopicRepository;
 
     @Transactional
     @PostMapping("/record")
@@ -60,12 +66,41 @@ public class ClickController {
     @GetMapping("/top10")
     public ApiResponse<List<ClickRecord>> top10() {
         List<ClickRecord> list = clickRecordRepository.findTop10ByOrderByCountDesc();
+        list = filterOrphaned(list);
         return ApiResponse.success(list);
     }
 
     @GetMapping("/top10/{module}")
     public ApiResponse<List<ClickRecord>> top10ByModule(@PathVariable String module) {
         List<ClickRecord> list = clickRecordRepository.findTop10ByModuleOrderByCountDesc(module);
+        list = filterOrphaned(list);
         return ApiResponse.success(list);
+    }
+
+    /**
+     * 过滤掉孤立的点击记录（引用的数据已不存在）
+     */
+    private List<ClickRecord> filterOrphaned(List<ClickRecord> list) {
+        List<ClickRecord> valid = new ArrayList<>();
+        for (ClickRecord cr : list) {
+            if (itemExists(cr.getModule(), cr.getItemId())) {
+                valid.add(cr);
+            } else {
+                clickRecordRepository.delete(cr);
+            }
+        }
+        return valid;
+    }
+
+    private boolean itemExists(String module, String itemId) {
+        switch (module) {
+            case "cmd": return commandTopicRepository.existsById(itemId);
+            case "fault": return faultRepository.existsById(itemId);
+            case "desktop": return desktopRepository.existsById(itemId);
+            case "linux": return linuxRepository.existsById(itemId);
+            case "office": return officeRepository.existsById(itemId);
+            case "ai": return aiTopicRepository.existsById(itemId);
+            default: return false;
+        }
     }
 }

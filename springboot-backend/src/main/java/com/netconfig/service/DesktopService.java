@@ -2,6 +2,7 @@ package com.netconfig.service;
 
 import com.netconfig.dto.DesktopDTO;
 import com.netconfig.entity.Desktop;
+import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.DesktopRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class DesktopService {
 
     private final DesktopRepository desktopRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<DesktopDTO> findAll() {
         return desktopRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -53,11 +55,15 @@ public class DesktopService {
     @Transactional
     public void delete(String id) {
         desktopRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("desktop", id);
     }
 
     @Transactional
     public void batchDelete(List<String> ids) {
         desktopRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("desktop", id);
+        }
     }
 
     private DesktopDTO toDTO(Desktop e) {

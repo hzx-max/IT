@@ -2,6 +2,7 @@ package com.netconfig.service;
 
 import com.netconfig.dto.FaultDTO;
 import com.netconfig.entity.Fault;
+import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.FaultRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class FaultService {
 
     private final FaultRepository faultRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<FaultDTO> findAll() {
         return faultRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -53,11 +55,15 @@ public class FaultService {
     @Transactional
     public void delete(String id) {
         faultRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("fault", id);
     }
 
     @Transactional
     public void batchDelete(List<String> ids) {
         faultRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("fault", id);
+        }
     }
 
     private FaultDTO toDTO(Fault e) {

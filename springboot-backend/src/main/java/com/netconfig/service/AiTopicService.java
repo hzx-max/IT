@@ -3,6 +3,7 @@ package com.netconfig.service;
 import com.netconfig.dto.AiTopicDTO;
 import com.netconfig.entity.AiTopic;
 import com.netconfig.repository.AiTopicRepository;
+import com.netconfig.repository.ClickRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class AiTopicService {
 
     private final AiTopicRepository aiTopicRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<AiTopicDTO> findAll() {
         return aiTopicRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -53,11 +55,15 @@ public class AiTopicService {
     @Transactional
     public void delete(String id) {
         aiTopicRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("ai", id);
     }
 
     @Transactional
     public void batchDelete(List<String> ids) {
         aiTopicRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("ai", id);
+        }
     }
 
     private AiTopicDTO toDTO(AiTopic e) {

@@ -2,6 +2,7 @@ package com.netconfig.service;
 
 import com.netconfig.dto.OfficeDTO;
 import com.netconfig.entity.Office;
+import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.OfficeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class OfficeService {
 
     private final OfficeRepository officeRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<OfficeDTO> findAll() {
         return officeRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -52,11 +54,15 @@ public class OfficeService {
     @Transactional
     public void delete(String id) {
         officeRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("office", id);
     }
 
     @Transactional
     public void batchDelete(List<String> ids) {
         officeRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("office", id);
+        }
     }
 
     private OfficeDTO toDTO(Office e) {

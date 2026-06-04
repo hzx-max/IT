@@ -2,13 +2,15 @@
   <MainLayout>
     <div class="max-w-[960px] mx-auto export-pdf-area">
       <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[26px] font-bold">{{ item?.title || '加载中...' }}</h2>
+        <h2 class="text-[30px] font-bold">{{ item?.title || '加载中...' }}</h2>
         <div class="flex gap-2.5 flex-wrap items-center">
           <button class="btn btn-primary text-sm" @click="$router.push('/ai/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
           <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
           <button class="btn btn-ghost text-sm" @click="$router.back()">&larr; 返回</button>
         </div>
       </div>
+
+      <div v-if="item?.category" class="detail-section"><div class="detail-label">分类</div><div class="detail-value">{{ item.category }}</div></div>
 
       <div v-if="loading" class="text-center py-20 text-slate-400"><div class="w-9 h-9 mx-auto mb-4 border-3 border-slate-200 border-t-purple-600 rounded-full animate-spin"></div>加载中...</div>
       <div v-else-if="error" class="text-center py-20 text-red-500">{{ error }}</div>
@@ -121,12 +123,12 @@ onMounted(async () => {
 <style scoped>
 .detail-section{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
 .detail-section:hover{box-shadow:var(--shadow-md)}
-.detail-label{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.detail-value{font-size:16px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.detail-label{font-size:24px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-value{font-size:18px;font-family:"Times New Roman","宋体",SimSun,serif;color:var(--text);line-height:1.8;white-space:pre-wrap}
 .code-block{font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:14px;background:#fff;color:#000;padding:16px;border-radius:6px;border:1.5px solid #e2e8f0;white-space:pre-wrap;line-height:1.7;margin:0}
 .detail-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
-.tag-time{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f5f3ff;color:#7c3aed;border:1.5px solid #ddd6fe;display:inline-block}
-.tag-cat{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f5f3ff;color:#7c3aed;border:1.5px solid #ddd6fe;display:inline-block}
+.tag-time{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f5f3ff;color:#7c3aed;border:1.5px solid #ddd6fe;display:inline-block}
+.tag-cat{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f5f3ff;color:#7c3aed;border:1.5px solid #ddd6fe;display:inline-block}
 .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .media-img{width:100%;border-radius:6px;cursor:pointer;border:1.5px solid #e2e8f0;transition:transform .2s}
 .media-img:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,.1)}

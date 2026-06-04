@@ -2,6 +2,7 @@ package com.netconfig.service;
 
 import com.netconfig.dto.LinuxDTO;
 import com.netconfig.entity.Linux;
+import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.LinuxRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class LinuxService {
 
     private final LinuxRepository linuxRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<LinuxDTO> findAll() {
         return linuxRepository.findAllByOrderByCreatedAtDesc().stream()
@@ -55,11 +57,15 @@ public class LinuxService {
     @Transactional
     public void delete(String id) {
         linuxRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("linux", id);
     }
 
     @Transactional
     public void batchDelete(List<String> ids) {
         linuxRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("linux", id);
+        }
     }
 
     private LinuxDTO toDTO(Linux e) {

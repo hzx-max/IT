@@ -3,6 +3,7 @@ package com.netconfig.service;
 import com.netconfig.dto.CommandDTO;
 import com.netconfig.entity.CommandConfig;
 import com.netconfig.entity.CommandTopic;
+import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.CommandConfigRepository;
 import com.netconfig.repository.CommandTopicRepository;
 import com.netconfig.repository.NoteRepository;
@@ -20,6 +21,7 @@ public class CommandService {
     private final CommandTopicRepository topicRepository;
     private final CommandConfigRepository configRepository;
     private final NoteRepository noteRepository;
+    private final ClickRecordRepository clickRecordRepository;
 
     public List<CommandDTO> findAll() {
         List<CommandTopic> topics = topicRepository.findAllByOrderByCreatedAtDesc();
@@ -78,6 +80,7 @@ public class CommandService {
         noteRepository.deleteById(id);
         configRepository.deleteByTopicId(id);
         topicRepository.deleteById(id);
+        clickRecordRepository.deleteByModuleAndItemId("cmd", id);
     }
 
     @Transactional
@@ -85,6 +88,9 @@ public class CommandService {
         noteRepository.deleteAllById(ids);
         configRepository.deleteByTopicIdIn(ids);
         topicRepository.deleteAllById(ids);
+        for (String id : ids) {
+            clickRecordRepository.deleteByModuleAndItemId("cmd", id);
+        }
     }
 
     private void saveConfig(String topicId, CommandDTO.ConfigItem item) {

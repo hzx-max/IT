@@ -2,7 +2,7 @@
   <MainLayout>
     <div class="max-w-[960px] mx-auto export-pdf-area">
       <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[26px] font-bold">{{ item?.title || '加载中...' }}</h2>
+        <h2 class="text-[30px] font-bold">{{ item?.title || '加载中...' }}</h2>
         <div class="flex gap-2.5 flex-wrap items-center">
           <button class="btn btn-primary text-sm" @click="$router.push('/cmd/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
           <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
@@ -45,18 +45,18 @@
           </div>
           <div v-for="(cfg,i) in configs" :key="cfg.vendor" v-show="activeConfig === i">
             <div v-if="cfg.config" class="mb-4">
-              <div class="font-semibold text-sm text-slate-700 mb-2">配置命令</div>
+              <div class="detail-sublabel">配置命令</div>
               <pre class="code-block">{{ cfg.config }}</pre>
             </div>
-            <div v-if="cfg.comment" class="mb-3 px-3.5 py-2.5 rounded-md bg-blue-50 text-blue-600 text-sm"><strong>配置说明：</strong>{{ cfg.comment }}</div>
-            <div v-if="cfg.doc" class="mb-3 text-sm"><strong>参考文档：</strong><a :href="cfg.doc" target="_blank" class="text-blue-600 no-underline hover:underline">{{ cfg.doc }}</a></div>
+            <div v-if="cfg.comment" class="mb-3"><div class="detail-sublabel">配置说明</div><div class="detail-value">{{ cfg.comment }}</div></div>
+            <div v-if="cfg.doc" class="mb-3"><div class="detail-sublabel">参考文档</div><div class="detail-value"><a :href="cfg.doc" target="_blank" class="text-blue-600 no-underline hover:underline">{{ cfg.doc }}</a></div></div>
             <div v-if="cfg.verificationCmd">
-              <div class="font-semibold text-sm text-slate-700 mb-2">验证命令</div>
+              <div class="detail-sublabel">验证命令</div>
               <pre class="code-block">{{ cfg.verificationCmd }}</pre>
             </div>
             <!-- 验证命令图片 -->
             <div v-if="getVerificationImages(cfg).length > 0" class="mt-4">
-              <div class="font-semibold text-sm text-slate-700 mb-2">验证截图</div>
+              <div class="detail-sublabel">验证截图</div>
               <div class="image-grid">
                 <div v-for="(img, idx) in getVerificationImages(cfg)" :key="'verify-'+idx" class="image-item">
                   <img :src="img.url" :alt="img.name || '验证截图'" class="image-thumb" @click="previewImage(img.url)" @error="onImageError" loading="lazy" />
@@ -241,12 +241,13 @@ onMounted(async () => {
 <style scoped>
 .detail-section{background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--transition-normal)}
 .detail-section:hover{box-shadow:var(--shadow-md)}
-.detail-label{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.detail-value{font-size:16px;color:var(--text);line-height:1.8;white-space:pre-wrap}
+.detail-label{font-size:24px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-sublabel{font-size:20px;font-weight:600;color:#475569;margin-bottom:6px;font-family:"Times New Roman","宋体",SimSun,serif}
+.detail-value{font-size:18px;font-family:"Times New Roman","宋体",SimSun,serif;color:var(--text);line-height:1.8;white-space:pre-wrap}
 .detail-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;background:var(--bg-white);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
-.tag-time{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f0f9ff;color:#2563eb;border:1.5px solid #bfdbfe;display:inline-block}
-.tag-vendor{display:inline-block;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:500;border:1.5px solid}
-.tag-cat{font-size:13px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}
+.tag-time{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#f0f9ff;color:#2563eb;border:1.5px solid #bfdbfe;display:inline-block}
+.tag-vendor{display:inline-block;padding:4px 12px;border-radius:12px;font-size:14px;font-weight:500;border:1.5px solid}
+.tag-cat{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}
 .vendor-tab{padding:8px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-white);color:var(--text-muted);font-size:15px;cursor:pointer;font-weight:500;transition:var(--transition-normal)}
 .vendor-tab:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;transition:all .25s ease}
