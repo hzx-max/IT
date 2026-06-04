@@ -63,6 +63,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { apiAi, formatTime } from '../../api/index.js'
+import { exportPdf } from '../../utils/pdfExport.js'
 
 const route = useRoute()
 const item = ref(null)
@@ -89,25 +90,20 @@ const extLabels = { pdf:'PDF',doc:'Word',docx:'Word',xls:'Excel',xlsx:'Excel',cs
 function getFileExtLabel(name) { return extLabels[getFileExt(name)] || getFileExt(name).toUpperCase() || '文件' }
 function formatFileSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+' B'; if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB'; return (bytes/1048576).toFixed(1)+' MB' }
 
-function loadHtml2Pdf() {
-  return new Promise((resolve, reject) => {
-    if (window.html2pdf) { resolve(); return }
-    const s = document.createElement('script')
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
-    s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
-  })
-}
-
 async function exportPDF() {
-  const btn = document.querySelector('.btn-pdf')
-  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
-  try {
-    await loadHtml2Pdf()
-    const el = document.querySelector('.export-pdf-area')
-    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
-    await window.html2pdf().set(opt).from(el).save()
-  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
-  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+  await exportPdf({
+    title: item.value?.title || 'AI运维',
+    sections: [
+      { label: 'AI场景', type: 'text', value: item.value?.scenario },
+      { label: '图片/视频', type: 'media', value: [...(item.value?.images || []), ...(item.value?.videos || [])] },
+      { label: '提示词', type: 'code', value: item.value?.prompt },
+      { label: '配置', type: 'code', value: item.value?.config },
+      { label: '描述', type: 'text', value: item.value?.desc },
+      { label: '详细内容', type: 'text', value: item.value?.detail },
+      { label: '附件', type: 'files', value: item.value?.files }
+    ],
+    footer: `创建时间: ${formatTime(item.value?.createdAt)}`
+  }, item.value?.title || 'AI运维')
 }
 
 onMounted(async () => {

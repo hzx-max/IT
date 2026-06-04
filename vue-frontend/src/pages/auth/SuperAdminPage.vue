@@ -29,6 +29,65 @@
         </div>
 
         <div v-else>
+          <!-- 全部管理员 -->
+          <div class="super-card">
+            <h3 class="super-card-title">全部管理员</h3>
+            <!-- 批量操作栏 -->
+            <div class="super-batch-bar">
+              <label class="super-checkbox-label">
+                <input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" />
+                <span>全选 ({{ selectedAllUsers.size }})</span>
+              </label>
+              <div class="super-batch-actions">
+                <button class="super-btn super-btn-danger super-btn-sm" @click="batchRemoveUsers" :disabled="batchLoading || selectedAllUsers.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量删除 (${selectedAllUsers.size})` }}
+                </button>
+              </div>
+            </div>
+            <div class="super-table-wrap">
+              <table class="super-table table-fixed">
+                <colgroup>
+                  <col style="width:40px"><col><col style="width:130px"><col style="width:100px"><col style="width:170px"><col style="width:100px">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="text-center"><input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" /></th>
+                    <th class="text-center">用户名</th>
+                    <th class="text-center">角色</th>
+                    <th class="text-center">状态</th>
+                    <th class="text-center">注册时间</th>
+                    <th class="text-right">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="u in allUsers" :key="u.id">
+                    <td class="text-center">
+                      <input v-if="u.role !== 'SUPER_ADMIN'" type="checkbox" :checked="selectedAllUsers.has(u.id)" @change="toggleSelectAllUser(u.id)" :disabled="batchLoading" />
+                    </td>
+                    <td class="text-center">
+                      <span class="super-table-name">{{ u.username }}</span>
+                      <span v-if="currentUser === u.username" class="super-tag-current">当前</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="super-tag" :class="u.role === 'SUPER_ADMIN' ? 'super-tag-purple' : 'super-tag-blue'">
+                        {{ u.role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <span class="super-tag" :class="statusClass(u.status)">{{ statusLabel(u.status) }}</span>
+                    </td>
+                    <td class="super-table-time text-center">{{ u.createdAt }}</td>
+                    <td class="text-right">
+                      <button v-if="u.role !== 'SUPER_ADMIN'" class="super-btn-text-danger" @click="removeUser(u)">删除</button>
+                      <span v-else class="super-table-na">-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-if="allUsers.length === 0" class="super-empty">暂无管理员</div>
+          </div>
+
           <!-- 待审核 -->
           <div class="super-card">
             <h3 class="super-card-title">
@@ -205,65 +264,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- 全部管理员 -->
-          <div class="super-card">
-            <h3 class="super-card-title">全部管理员</h3>
-            <!-- 批量操作栏 -->
-            <div class="super-batch-bar">
-              <label class="super-checkbox-label">
-                <input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" />
-                <span>全选 ({{ selectedAllUsers.size }})</span>
-              </label>
-              <div class="super-batch-actions">
-                <button class="super-btn super-btn-danger super-btn-sm" @click="batchRemoveUsers" :disabled="batchLoading || selectedAllUsers.size === 0">
-                  {{ batchLoading ? '处理中...' : `批量删除 (${selectedAllUsers.size})` }}
-                </button>
-              </div>
-            </div>
-            <div class="super-table-wrap">
-              <table class="super-table table-fixed">
-                <colgroup>
-                  <col style="width:40px"><col><col style="width:130px"><col style="width:100px"><col style="width:170px"><col style="width:100px">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th class="text-center"><input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" /></th>
-                    <th class="text-center">用户名</th>
-                    <th class="text-center">角色</th>
-                    <th class="text-center">状态</th>
-                    <th class="text-center">注册时间</th>
-                    <th class="text-right">操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="u in allUsers" :key="u.id">
-                    <td class="text-center">
-                      <input v-if="u.role !== 'SUPER_ADMIN'" type="checkbox" :checked="selectedAllUsers.has(u.id)" @change="toggleSelectAllUser(u.id)" :disabled="batchLoading" />
-                    </td>
-                    <td class="text-center">
-                      <span class="super-table-name">{{ u.username }}</span>
-                      <span v-if="currentUser === u.username" class="super-tag-current">当前</span>
-                    </td>
-                    <td class="text-center">
-                      <span class="super-tag" :class="u.role === 'SUPER_ADMIN' ? 'super-tag-purple' : 'super-tag-blue'">
-                        {{ u.role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}
-                      </span>
-                    </td>
-                    <td class="text-center">
-                      <span class="super-tag" :class="statusClass(u.status)">{{ statusLabel(u.status) }}</span>
-                    </td>
-                    <td class="super-table-time text-center">{{ u.createdAt }}</td>
-                    <td class="text-right">
-                      <button v-if="u.role !== 'SUPER_ADMIN'" class="super-btn-text-danger" @click="removeUser(u)">删除</button>
-                      <span v-else class="super-table-na">-</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div v-if="allUsers.length === 0" class="super-empty">暂无管理员</div>
           </div>
         </div>
 

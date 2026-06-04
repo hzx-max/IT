@@ -59,6 +59,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { apiDesktop, formatTime } from '../../api/index.js'
+import { exportPdf } from '../../utils/pdfExport.js'
 
 const route = useRoute()
 const item = ref(null)
@@ -116,25 +117,17 @@ function formatFileSize(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
-function loadHtml2Pdf() {
-  return new Promise((resolve, reject) => {
-    if (window.html2pdf) { resolve(); return }
-    const s = document.createElement('script')
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
-    s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
-  })
-}
-
 async function exportPDF() {
-  const btn = document.querySelector('.btn-pdf')
-  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
-  try {
-    await loadHtml2Pdf()
-    const el = document.querySelector('.export-pdf-area')
-    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
-    await window.html2pdf().set(opt).from(el).save()
-  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
-  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+  await exportPdf({
+    title: item.value?.title || '桌面运维',
+    sections: [
+      { label: '图片/视频', type: 'media', value: [...(item.value?.images || []), ...(item.value?.videos || [])] },
+      { label: '故障现象', type: 'text', value: item.value?.symptom },
+      { label: '解决方案', type: 'text', value: item.value?.solution },
+      { label: '附件', type: 'files', value: item.value?.files }
+    ],
+    footer: `创建时间: ${formatTime(item.value?.createdAt)}`
+  }, item.value?.title || '桌面运维')
 }
 
 onMounted(async () => {

@@ -109,6 +109,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiTopics, apiNotes } from '../../api/index.js'
+import { exportPdf } from '../../utils/pdfExport.js'
 
 const route = useRoute()
 const item = ref(null)
@@ -167,25 +168,47 @@ function onImageError(e) {
   }
 }
 
-function loadHtml2Pdf() {
-  return new Promise((resolve, reject) => {
-    if (window.html2pdf) { resolve(); return }
-    const s = document.createElement('script')
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
-    s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
-  })
-}
-
 async function exportPDF() {
-  const btn = document.querySelector('.btn-pdf')
-  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
-  try {
-    await loadHtml2Pdf()
-    const el = document.querySelector('.export-pdf-area')
-    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
-    await window.html2pdf().set(opt).from(el).save()
-  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
-  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+  // 构建网络命令的 PDF 数据
+  const sections = []
+
+  if (item.value?.desc) {
+    sections.push({ label: '描述', type: 'text', value: item.value.desc })
+  }
+  if (item.value?.detail) {
+    sections.push({ label: '详细内容', type: 'text', value: item.value.detail })
+  }
+
+  // 拓扑图
+  const topoImgs = topoImages.value
+  if (topoImgs.length > 0) {
+    sections.push({ label: '拓扑图', type: 'media', value: topoImgs.map(img => img.url) })
+  }
+
+  // 厂商配置
+  for (const cfg of configs.value) {
+    const vendorName = getVendorName(cfg.vendor, VENDOR_MAP)
+    if (cfg.config) {
+      sections.push({ label: `${vendorName} - 配置命令`, type: 'code', value: cfg.config })
+    }
+    if (cfg.comment) {
+      sections.push({ label: `${vendorName} - 配置说明`, type: 'text', value: cfg.comment })
+    }
+    const verifyImgs = getVerificationImages(cfg)
+    if (verifyImgs.length > 0) {
+      sections.push({ label: `${vendorName} - 验证截图`, type: 'media', value: verifyImgs.map(img => img.url) })
+    }
+  }
+
+  if (item.value?.files?.length > 0) {
+    sections.push({ label: '附件', type: 'files', value: item.value.files })
+  }
+
+  await exportPdf({
+    title: item.value?.title || '网络命令',
+    sections,
+    footer: `创建时间: ${formatTime(item.value?.createdAt)}`
+  }, item.value?.title || '网络命令')
 }
 
 async function loadNote() {

@@ -78,6 +78,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiOffice, apiNotes } from '../../api/index.js'
+import { exportPdf } from '../../utils/pdfExport.js'
 
 const route = useRoute()
 const item = ref(null)
@@ -107,21 +108,16 @@ function getFileExtLabel(name) { return extLabels[getFileExt(name)] || getFileEx
 function formatFileSize(bytes) { if(!bytes) return ''; if(bytes<1024) return bytes+' B'; if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB'; return (bytes/1048576).toFixed(1)+' MB' }
 
 async function exportPDF() {
-  const btn = document.querySelector('.btn-pdf')
-  if (btn) { btn.textContent = '生成中...'; btn.disabled = true }
-  try {
-    if (!window.html2pdf) {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script')
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
-        s.onload = resolve; s.onerror = reject; document.head.appendChild(s)
-      })
-    }
-    const el = document.querySelector('.export-pdf-area')
-    const opt = { margin: [10, 10, 10, 10], filename: (item.value?.title || '导出') + '.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }
-    await window.html2pdf().set(opt).from(el).save()
-  } catch (e) { alert('PDF生成失败，请检查网络连接后重试') }
-  finally { if (btn) { btn.textContent = '导出PDF'; btn.disabled = false } }
+  await exportPdf({
+    title: item.value?.title || 'Office运维',
+    sections: [
+      { label: '描述', type: 'text', value: item.value?.desc },
+      { label: '图片/视频', type: 'media', value: [...(item.value?.images || []), ...(item.value?.videos || [])] },
+      { label: '详细内容', type: 'text', value: item.value?.detail },
+      { label: '附件', type: 'files', value: item.value?.files }
+    ],
+    footer: `创建时间: ${formatTime(item.value?.createdAt)}`
+  }, item.value?.title || 'Office运维')
 }
 
 async function loadNote() {
