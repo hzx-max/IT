@@ -19,6 +19,7 @@
     <div class="cmd-grid">
       <div v-for="item in filtered" :key="item.id" class="cmd-card" @click="handleClick(item)">
         <div class="cmd-card-body">
+          <CardCarousel :images="item.images" :videos="item.videos" />
           <h3>{{ item.title }}</h3>
           <div class="tag-row mt-auto pt-2">
             <span v-if="item.cat" class="tag-cat">{{ getCatLabel(item.cat, LINUX_CAT_MAP) }}</span>
@@ -39,6 +40,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
+import CardCarousel from '../../components/CardCarousel.vue'
 import CategoryStrip from '../../components/CategoryStrip.vue'
 import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatDate, apiClicks } from '../../api/index.js'
 
@@ -96,7 +98,7 @@ onMounted(async () => {
 .cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .cmd-card{background:var(--bg-white);border-radius:var(--radius);border:1.5px solid var(--border);cursor:pointer;transition:var(--transition-slow);position:relative;overflow:hidden;display:flex;flex-direction:column}
 .cmd-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));opacity:0;transition:opacity .3s ease}
-.cmd-card:hover{border-color:var(--primary);box-shadow:0 8px 25px rgba(37,99,235,.12);transform:translateY(-3px)}
+.cmd-card:hover{overflow:visible;z-index:20;border-color:var(--primary);box-shadow:0 8px 25px rgba(37,99,235,.12);transform:translateY(-3px)}
 .cmd-card:hover::before{opacity:1}
 .cmd-card:active{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.08)}
 .cmd-card-body{padding:16px 20px 20px;display:flex;flex-direction:column;height:100%}

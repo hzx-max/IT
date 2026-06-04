@@ -111,6 +111,7 @@ public class CommandService {
         d.setId(t.getId());
         d.setTitle(t.getTitle());
         d.setCat(t.getCat());
+        d.setTopo(JsonUtil.toList(t.getTopo()));
         d.setDesc(t.getDesc());
         d.setCreatedAt(t.getCreatedAt());
         List<CommandConfig> cfgs = configRepository.findByTopicIdOrderByVendor(t.getId());
