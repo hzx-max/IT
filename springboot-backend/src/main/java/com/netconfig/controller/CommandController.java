@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.dto.CommandDTO;
 import com.netconfig.service.CommandService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class CommandController {
     }
 
     @PostMapping("/api/topics")
-    public ResponseEntity<ApiResponse<CommandDTO>> create(@RequestBody CommandDTO dto) {
+    public ResponseEntity<ApiResponse<CommandDTO>> create(@Valid @RequestBody CommandDTO dto) {
         if (dto.getTitle() == null || dto.getCat() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing title or cat"));
         }

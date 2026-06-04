@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +19,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserTokenRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -29,7 +30,7 @@ public class AuthService {
         User user = new User();
         user.setId("user_" + System.currentTimeMillis() + "_" + RANDOM.nextInt(10000));
         user.setUsername(username);
-        user.setPassword(hashPassword(password));
+        user.setPassword(passwordEncoder.encode(password));
         user.setRole("ADMIN");
         user.setStatus("PENDING");
         user.setCreatedAt(JsonUtil.nowLocal());
@@ -41,7 +42,7 @@ public class AuthService {
         Optional<User> opt = userRepository.findByUsername(username);
         if (opt.isEmpty()) return null;
         User user = opt.get();
-        if (!user.getPassword().equals(hashPassword(password))) return null;
+        if (!checkPasswordAndMigrate(user, password)) return null;
         if (!"APPROVED".equals(user.getStatus()) && !"SUPER_ADMIN".equals(user.getRole())) return null;
 
         // 删除旧token
@@ -70,10 +71,16 @@ public class AuthService {
     }
 
     public UserToken validateToken(String token) {
+        if (token == null || token.isBlank()) return null;
         Optional<UserToken> opt = tokenRepository.findByToken(token);
         if (opt.isEmpty()) return null;
         UserToken ut = opt.get();
-        if (LocalDateTime.parse(ut.getExpiresAt(), java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isBefore(LocalDateTime.now())) {
+        try {
+            if (LocalDateTime.parse(ut.getExpiresAt(), java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).isBefore(LocalDateTime.now())) {
+                tokenRepository.deleteById(token);
+                return null;
+            }
+        } catch (Exception e) {
             tokenRepository.deleteById(token);
             return null;
         }
@@ -109,16 +116,31 @@ public class AuthService {
         return userRepository.findById(ut.getUserId()).orElse(null);
     }
 
-    private String hashPassword(String password) {
+    public void migratePassword(User user, String rawPassword) {
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
+    }
+
+    private boolean checkPasswordAndMigrate(User user, String rawPassword) {
+        String stored = user.getPassword();
+        // 如果是 BCrypt 格式，直接匹配
+        if (stored != null && stored.startsWith("$2")) {
+            if (passwordEncoder.matches(rawPassword, stored)) return true;
+            return false;
+        }
+        // 兼容旧版 SHA-256 哈希，匹配后自动迁移到 BCrypt
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(password.getBytes("UTF-8"));
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(rawPassword.getBytes("UTF-8"));
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Hash error", e);
-        }
+            if (stored != null && stored.equals(sb.toString())) {
+                user.setPassword(passwordEncoder.encode(rawPassword));
+                userRepository.save(user);
+                return true;
+            }
+        } catch (Exception ignored) {}
+        return false;
     }
 
     private String generateToken() {

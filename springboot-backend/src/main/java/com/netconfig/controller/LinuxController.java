@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.dto.LinuxDTO;
 import com.netconfig.service.LinuxService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class LinuxController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<LinuxDTO>> create(@RequestBody LinuxDTO dto) {
+    public ResponseEntity<ApiResponse<LinuxDTO>> create(@Valid @RequestBody LinuxDTO dto) {
         if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing required fields"));
         }

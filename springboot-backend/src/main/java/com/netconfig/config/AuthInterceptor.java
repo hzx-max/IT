@@ -55,6 +55,15 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // CSRF 防护：写操作必须包含 X-Requested-With 头
+        String requestedWith = request.getHeader("X-Requested-With");
+        if (!"XMLHttpRequest".equals(requestedWith)) {
+            response.setStatus(403);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":403,\"msg\":\"无效的请求来源\"}");
+            return false;
+        }
+
         // 文件上传接口 - 允许ADMIN和SUPER_ADMIN（用于审核流程中上传图片）
         if (path.startsWith("/api/upload")) {
             return checkAuthWithoutSuperAdmin(request, response);

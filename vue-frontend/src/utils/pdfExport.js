@@ -83,8 +83,6 @@ export function buildPdfHtml({ title, sections = [], footer = '' }) {
       }
     } else if (sec.type === 'code') {
       html += `<pre class="pdf-code">${escapeHtml(String(sec.value))}</pre>`
-    } else if (sec.type === 'html') {
-      html += sec.value
     } else {
       html += `<div class="pdf-value">${escapeHtml(String(sec.value))}</div>`
     }

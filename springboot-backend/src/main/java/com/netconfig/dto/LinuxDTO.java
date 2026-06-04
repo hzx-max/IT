@@ -1,5 +1,7 @@
 package com.netconfig.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.util.List;
 import java.util.Map;
@@ -7,8 +9,11 @@ import java.util.Map;
 @Data
 public class LinuxDTO {
     private String id;
+    @NotBlank @Size(max = 200)
     private String title;
+    @NotBlank @Size(max = 50)
     private String vendor;
+    @NotBlank @Size(max = 50)
     private String cat;
     private List<Map<String, Object>> topo;
     private String desc;

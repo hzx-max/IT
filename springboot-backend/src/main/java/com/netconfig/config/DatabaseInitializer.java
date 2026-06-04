@@ -2,12 +2,13 @@ package com.netconfig.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 
 @Component
@@ -15,6 +16,15 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     @Value("${project.root:}")
     private String projectRoot;
+
+    @Value("${admin.default.password:admin123}")
+    private String defaultPassword;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public DatabaseInitializer(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     private String resolveProjectRoot() {
         if (projectRoot != null && !projectRoot.isEmpty()) {
@@ -221,21 +231,25 @@ public class DatabaseInitializer implements CommandLineRunner {
                 )
             """);
 
-            // 初始化超级管理员账号（默认密码: admin123）
-            try {
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                byte[] hash = md.digest("admin123".getBytes("UTF-8"));
-                StringBuilder sb = new StringBuilder();
-                for (byte b : hash) sb.append(String.format("%02x", b));
-                String hashedPwd = sb.toString();
-                stmt.execute("INSERT OR IGNORE INTO users (id,username,password,role,status,created_at) VALUES ('user_super_admin','admin','" + hashedPwd + "','SUPER_ADMIN','APPROVED',datetime('now','localtime'))");
+            // 初始化超级管理员账号（密码从配置读取，默认 admin123，
+            // 启动后请立即修改！实际生产环境务必通过环境变量 ADMIN_DEFAULT_PASSWORD 设置强密码）
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT OR IGNORE INTO users (id,username,password,role,status,created_at) VALUES (?,?,?,?,?,datetime('now','localtime'))")) {
+                ps.setString(1, "user_super_admin");
+                ps.setString(2, "admin");
+                ps.setString(3, passwordEncoder.encode(defaultPassword));
+                ps.setString(4, "SUPER_ADMIN");
+                ps.setString(5, "APPROVED");
+                ps.executeUpdate();
             } catch (Exception e) {
                 System.out.println("[NetConfig] 超级管理员初始化失败: " + e.getMessage());
             }
 
             String[] tables = {"command_topics", "faults", "desktop", "linux", "office", "ai_topics"};
+            java.util.Set<String> validTables = java.util.Set.of(tables);
 
             for (String table : tables) {
+                if (!validTables.contains(table)) continue;
                 try {
                     stmt.execute("ALTER TABLE " + table + " ADD COLUMN images TEXT DEFAULT '[]'");
                 } catch (Exception ignored) {}
@@ -245,11 +259,13 @@ public class DatabaseInitializer implements CommandLineRunner {
             }
 
             for (String table : tables) {
+                if (!validTables.contains(table)) continue;
                 try {
                     stmt.execute("UPDATE " + table + " SET created_at=datetime('now','localtime') WHERE created_at IS NULL OR created_at=''");
                 } catch (Exception ignored) {}
             }
             for (String table : tables) {
+                if (!validTables.contains(table)) continue;
                 try {
                     stmt.execute("UPDATE " + table + " SET created_at=substr(datetime(created_at,'localtime'),1,16) WHERE created_at IS NOT NULL AND length(created_at)=19");
                 } catch (Exception ignored) {}

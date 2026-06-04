@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.dto.DesktopDTO;
 import com.netconfig.service.DesktopService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class DesktopController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<DesktopDTO>> create(@RequestBody DesktopDTO dto) {
+    public ResponseEntity<ApiResponse<DesktopDTO>> create(@Valid @RequestBody DesktopDTO dto) {
         if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing field: title"));
         }

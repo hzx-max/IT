@@ -31,7 +31,7 @@ public class AuthController {
         }
         User user = authService.register(username.trim(), password);
         if (user == null) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("用户名已存在"));
+            return ResponseEntity.ok(ApiResponse.success(Map.of("message", "注册申请已提交，等待审核")));
         }
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "id", user.getId(),
@@ -50,7 +50,7 @@ public class AuthController {
         }
         Map<String, String> result = authService.login(username, password);
         if (result == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error("用户名或密码错误，或账号未审核通过"));
+            return ResponseEntity.status(401).body(ApiResponse.error("用户名或密码错误"));
         }
         return ResponseEntity.ok(ApiResponse.success(result));
     }

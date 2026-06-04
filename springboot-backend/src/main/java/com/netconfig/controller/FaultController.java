@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.dto.FaultDTO;
 import com.netconfig.service.FaultService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class FaultController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<FaultDTO>> create(@RequestBody FaultDTO dto) {
+    public ResponseEntity<ApiResponse<FaultDTO>> create(@Valid @RequestBody FaultDTO dto) {
         if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing field: title"));
         }

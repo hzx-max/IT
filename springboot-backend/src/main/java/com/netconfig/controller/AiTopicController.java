@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.AiTopicDTO;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.service.AiTopicService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class AiTopicController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AiTopicDTO>> create(@RequestBody AiTopicDTO dto) {
+    public ResponseEntity<ApiResponse<AiTopicDTO>> create(@Valid @RequestBody AiTopicDTO dto) {
         if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing field: title"));
         }

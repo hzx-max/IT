@@ -1,5 +1,7 @@
 package com.netconfig.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +9,7 @@ import java.util.Map;
 @Data
 public class FaultDTO {
     private String id;
+    @NotBlank @Size(max = 200)
     private String title;
     private String category;
     private String symptom;

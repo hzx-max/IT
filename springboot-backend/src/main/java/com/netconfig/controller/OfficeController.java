@@ -3,6 +3,7 @@ package com.netconfig.controller;
 import com.netconfig.dto.ApiResponse;
 import com.netconfig.dto.OfficeDTO;
 import com.netconfig.service.OfficeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class OfficeController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OfficeDTO>> create(@RequestBody OfficeDTO dto) {
+    public ResponseEntity<ApiResponse<OfficeDTO>> create(@Valid @RequestBody OfficeDTO dto) {
         if (dto.getTitle() == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing required fields"));
         }

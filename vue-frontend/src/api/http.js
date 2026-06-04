@@ -6,12 +6,13 @@ const http = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-// 请求拦截器：自动添加 token
+// 请求拦截器：自动添加 token 和 CSRF 保护头
 http.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  config.headers['X-Requested-With'] = 'XMLHttpRequest'
   return config
 })
 
