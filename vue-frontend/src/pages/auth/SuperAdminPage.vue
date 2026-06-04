@@ -30,13 +30,32 @@
 
         <div v-else>
           <!-- 待审核 -->
-          <div v-if="pendingUsers.length > 0" class="super-card">
+          <div class="super-card">
             <h3 class="super-card-title">
               待审核申请
               <span class="super-badge super-badge-orange">{{ pendingUsers.length }}</span>
             </h3>
-            <div class="super-list">
+            <!-- 批量操作栏 -->
+            <div class="super-batch-bar">
+              <label class="super-checkbox-label">
+                <input type="checkbox" :checked="isAllUsersSelected()" @change="selectAllUsers()" :disabled="batchLoading || pendingUsers.length === 0" />
+                <span>全选 ({{ selectedUsers.size }}/{{ pendingUsers.length }})</span>
+              </label>
+              <div class="super-batch-actions">
+                <button class="super-btn super-btn-primary super-btn-sm" @click="batchApproveUsers" :disabled="batchLoading || selectedUsers.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量通过 (${selectedUsers.size})` }}
+                </button>
+                <button class="super-btn super-btn-danger super-btn-sm" @click="batchRejectUsers" :disabled="batchLoading || selectedUsers.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量拒绝 (${selectedUsers.size})` }}
+                </button>
+              </div>
+            </div>
+            <div v-if="pendingUsers.length === 0" class="super-empty">暂无待审核申请</div>
+            <div v-else class="super-list">
               <div v-for="u in pendingUsers" :key="u.id" class="super-list-item">
+                <label class="super-checkbox-label super-checkbox-inline">
+                  <input type="checkbox" :checked="selectedUsers.has(u.id)" @change="toggleSelectUser(u.id)" :disabled="batchLoading" />
+                </label>
                 <div>
                   <div class="super-list-name">{{ u.username }}</div>
                   <div class="super-list-time">申请时间: {{ u.createdAt }}</div>
@@ -50,13 +69,32 @@
           </div>
 
           <!-- 待审核数据变更 -->
-          <div v-if="pendingChanges.length > 0" class="super-card">
+          <div class="super-card">
             <h3 class="super-card-title">
               待审核数据变更
               <span class="super-badge super-badge-orange">{{ pendingChanges.length }}</span>
             </h3>
-            <div class="super-list">
+            <!-- 批量操作栏 -->
+            <div class="super-batch-bar">
+              <label class="super-checkbox-label">
+                <input type="checkbox" :checked="isAllChangesSelected()" @change="selectAllChanges()" :disabled="batchLoading || pendingChanges.length === 0" />
+                <span>全选 ({{ selectedChanges.size }}/{{ pendingChanges.length }})</span>
+              </label>
+              <div class="super-batch-actions">
+                <button class="super-btn super-btn-primary super-btn-sm" @click="batchApproveChanges" :disabled="batchLoading || selectedChanges.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量通过 (${selectedChanges.size})` }}
+                </button>
+                <button class="super-btn super-btn-danger super-btn-sm" @click="batchRejectChanges" :disabled="batchLoading || selectedChanges.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量拒绝 (${selectedChanges.size})` }}
+                </button>
+              </div>
+            </div>
+            <div v-if="pendingChanges.length === 0" class="super-empty">暂无待审核数据变更</div>
+            <div v-else class="super-list">
               <div v-for="c in pendingChanges" :key="c.id" class="super-list-item super-change-item">
+                <label class="super-checkbox-label super-checkbox-inline">
+                  <input type="checkbox" :checked="selectedChanges.has(c.id)" @change="toggleSelectChange(c.id)" :disabled="batchLoading" />
+                </label>
                 <div class="super-change-info">
                   <div class="super-list-name">
                     <span class="super-tag" :class="opClass(c.operation)">{{ opLabel(c.operation) }}</span>
@@ -67,7 +105,7 @@
 
                   <!-- 详情直接渲染 -->
                   <div class="super-detail-panel">
-                    <!-- UPDATE: 只显示有修改的字段，原文对比 -->
+                    <!-- UPDATE: 渲染所有字段，修改内容高亮并原文对照 -->
                     <template v-if="c.operation === 'UPDATE'">
                       <div v-if="originalsMap[c.id] === undefined && loadingOriginals" class="super-detail-loading">加载原文中...</div>
                       <template v-else>
@@ -75,31 +113,37 @@
                           <span class="super-diff-legend">
                             <span class="super-diff-mark-changed"></span> 黄色高亮 = 有修改
                           </span>
+                          <span class="super-diff-legend">
+                            <span class="super-diff-mark-unchanged"></span> 灰色 = 无修改
+                          </span>
                         </div>
-                        <div v-for="field in getChangedFields(parsePayload(c), originalsMap[c.id]).filter(f => f.changed)" :key="field.key"
-                          class="super-diff-row super-diff-changed">
+                        <!-- 渲染所有字段（不筛选changed） -->
+                        <div v-for="field in getChangedFields(parsePayload(c), originalsMap[c.id])" :key="field.key"
+                          class="super-diff-row" :class="{ 'super-diff-changed': field.changed, 'super-diff-unchanged': !field.changed }">
                           <div class="super-diff-label">{{ field.label }}</div>
                           <div class="super-diff-values">
-                            <!-- 原值 -->
-                            <div class="super-diff-col super-diff-old">
-                              <span class="super-diff-tag-old">原</span>
-                              <div class="super-diff-content">
-                                <template v-if="isMediaField(field.key)">
-                                  <div class="super-media-list">
-                                    <template v-for="(item, idx) in normalizeMediaList(field.original)" :key="'o'+idx">
-                                      <img v-if="isImage(item)" :src="item" class="super-media-img" @click.stop="previewImg = item" />
-                                      <video v-else-if="isVideo(item)" :src="item" controls class="super-media-video"></video>
-                                      <a v-else :href="item" target="_blank" class="super-media-link" :download="getFileName(item)">{{ getFileName(item) }}</a>
-                                    </template>
-                                    <span v-if="normalizeMediaList(field.original).length === 0" class="super-diff-text">(空)</span>
-                                  </div>
-                                </template>
-                                <span v-else class="super-diff-text">{{ formatValue(field.original) }}</span>
+                            <!-- 有修改: 显示原值对照 -->
+                            <template v-if="field.changed">
+                              <div class="super-diff-col super-diff-old">
+                                <span class="super-diff-tag-old">原</span>
+                                <div class="super-diff-content">
+                                  <template v-if="isMediaField(field.key)">
+                                    <div class="super-media-list">
+                                      <template v-for="(item, idx) in normalizeMediaList(field.original)" :key="'o'+idx">
+                                        <img v-if="isImage(item)" :src="item" class="super-media-img" @click.stop="previewImg = item" />
+                                        <video v-else-if="isVideo(item)" :src="item" controls class="super-media-video"></video>
+                                        <a v-else :href="item" target="_blank" class="super-media-link" :download="getFileName(item)">{{ getFileName(item) }}</a>
+                                      </template>
+                                      <span v-if="normalizeMediaList(field.original).length === 0" class="super-diff-text">(空)</span>
+                                    </div>
+                                  </template>
+                                  <span v-else class="super-diff-text">{{ formatValue(field.original) }}</span>
+                                </div>
                               </div>
-                            </div>
-                            <!-- 新值 -->
-                            <div class="super-diff-col super-diff-new">
-                              <span class="super-diff-tag-new">新</span>
+                            </template>
+                            <!-- 新值（始终显示） -->
+                            <div class="super-diff-col" :class="field.changed ? 'super-diff-new' : ''">
+                              <span v-if="field.changed" class="super-diff-tag-new">新</span>
                               <div class="super-diff-content">
                                 <template v-if="isMediaField(field.key)">
                                   <div class="super-media-list">
@@ -111,12 +155,12 @@
                                     <span v-if="normalizeMediaList(field.newVal).length === 0" class="super-diff-text">(空)</span>
                                   </div>
                                 </template>
-                                <span v-else class="super-diff-text">{{ formatValue(field.newVal) }}</span>
+                                <span v-else class="super-diff-text" :class="{ 'super-diff-unchanged-text': !field.changed }">{{ formatValue(field.newVal) }}</span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div v-if="getChangedFields(parsePayload(c), originalsMap[c.id]).filter(f => f.changed).length === 0" class="super-diff-empty">无修改内容</div>
+                        <div v-if="getChangedFields(parsePayload(c), originalsMap[c.id]).length === 0" class="super-diff-empty">无修改内容</div>
                       </template>
                     </template>
 
@@ -166,13 +210,26 @@
           <!-- 全部管理员 -->
           <div class="super-card">
             <h3 class="super-card-title">全部管理员</h3>
+            <!-- 批量操作栏 -->
+            <div class="super-batch-bar">
+              <label class="super-checkbox-label">
+                <input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" />
+                <span>全选 ({{ selectedAllUsers.size }})</span>
+              </label>
+              <div class="super-batch-actions">
+                <button class="super-btn super-btn-danger super-btn-sm" @click="batchRemoveUsers" :disabled="batchLoading || selectedAllUsers.size === 0">
+                  {{ batchLoading ? '处理中...' : `批量删除 (${selectedAllUsers.size})` }}
+                </button>
+              </div>
+            </div>
             <div class="super-table-wrap">
               <table class="super-table table-fixed">
                 <colgroup>
-                  <col><col style="width:130px"><col style="width:100px"><col style="width:170px"><col style="width:100px">
+                  <col style="width:40px"><col><col style="width:130px"><col style="width:100px"><col style="width:170px"><col style="width:100px">
                 </colgroup>
                 <thead>
                   <tr>
+                    <th class="text-center"><input type="checkbox" :checked="isAllAdminsSelected()" @change="selectAllAdmins()" :disabled="batchLoading" /></th>
                     <th class="text-center">用户名</th>
                     <th class="text-center">角色</th>
                     <th class="text-center">状态</th>
@@ -182,6 +239,9 @@
                 </thead>
                 <tbody>
                   <tr v-for="u in allUsers" :key="u.id">
+                    <td class="text-center">
+                      <input v-if="u.role !== 'SUPER_ADMIN'" type="checkbox" :checked="selectedAllUsers.has(u.id)" @change="toggleSelectAllUser(u.id)" :disabled="batchLoading" />
+                    </td>
                     <td class="text-center">
                       <span class="super-table-name">{{ u.username }}</span>
                       <span v-if="currentUser === u.username" class="super-tag-current">当前</span>
@@ -237,6 +297,155 @@ const loadingOriginals = ref(false)
 const previewImg = ref(null)
 
 const pendingUsers = computed(() => allUsers.value.filter(u => u.status === 'PENDING'))
+
+// 批量选择状态
+const selectedUsers = ref(new Set())
+const selectedChanges = ref(new Set())
+const selectedAllUsers = ref(new Set())
+const batchLoading = ref(false)
+
+// 待审核用户批量选择
+function toggleSelectUser(id) {
+  const s = new Set(selectedUsers.value)
+  if (s.has(id)) { s.delete(id) } else { s.add(id) }
+  selectedUsers.value = s
+}
+function selectAllUsers() {
+  if (selectedUsers.value.size === pendingUsers.value.length) {
+    selectedUsers.value = new Set()
+  } else {
+    selectedUsers.value = new Set(pendingUsers.value.map(u => u.id))
+  }
+}
+function isAllUsersSelected() {
+  return pendingUsers.value.length > 0 && selectedUsers.value.size === pendingUsers.value.length
+}
+
+// 待审核变更批量选择
+function toggleSelectChange(id) {
+  const s = new Set(selectedChanges.value)
+  if (s.has(id)) { s.delete(id) } else { s.add(id) }
+  selectedChanges.value = s
+}
+function selectAllChanges() {
+  if (selectedChanges.value.size === pendingChanges.value.length) {
+    selectedChanges.value = new Set()
+  } else {
+    selectedChanges.value = new Set(pendingChanges.value.map(c => c.id))
+  }
+}
+function isAllChangesSelected() {
+  return pendingChanges.value.length > 0 && selectedChanges.value.size === pendingChanges.value.length
+}
+
+// 全部管理员批量选择
+function toggleSelectAllUser(id) {
+  const s = new Set(selectedAllUsers.value)
+  if (s.has(id)) { s.delete(id) } else { s.add(id) }
+  selectedAllUsers.value = s
+}
+function selectAllAdmins() {
+  const admins = allUsers.value.filter(u => u.role !== 'SUPER_ADMIN')
+  if (selectedAllUsers.value.size === admins.length) {
+    selectedAllUsers.value = new Set()
+  } else {
+    selectedAllUsers.value = new Set(admins.map(u => u.id))
+  }
+}
+function isAllAdminsSelected() {
+  const admins = allUsers.value.filter(u => u.role !== 'SUPER_ADMIN')
+  return admins.length > 0 && selectedAllUsers.value.size === admins.length
+}
+
+// 批量审批用户
+async function batchApproveUsers() {
+  if (selectedUsers.value.size === 0) return
+  if (!confirm(`确认批量通过 ${selectedUsers.value.size} 个用户申请吗？`)) return
+  batchLoading.value = true
+  let done = 0; let err = 0
+  for (const id of selectedUsers.value) {
+    try {
+      await apiAuth.approveUser(id, true)
+      done++
+    } catch (e) { err++ }
+  }
+  selectedUsers.value = new Set()
+  batchLoading.value = false
+  showMsg(`批量通过: ${done} 成功, ${err} 失败`, err > 0 ? 'error' : 'success')
+  await loadUsers()
+}
+
+// 批量拒绝用户
+async function batchRejectUsers() {
+  if (selectedUsers.value.size === 0) return
+  if (!confirm(`确认批量拒绝 ${selectedUsers.value.size} 个用户申请吗？`)) return
+  batchLoading.value = true
+  let done = 0; let err = 0
+  for (const id of selectedUsers.value) {
+    try {
+      await apiAuth.approveUser(id, false)
+      done++
+    } catch (e) { err++ }
+  }
+  selectedUsers.value = new Set()
+  batchLoading.value = false
+  showMsg(`批量拒绝: ${done} 成功, ${err} 失败`, err > 0 ? 'error' : 'success')
+  await loadUsers()
+}
+
+// 批量审批变更
+async function batchApproveChanges() {
+  if (selectedChanges.value.size === 0) return
+  if (!confirm(`确认批量通过 ${selectedChanges.value.size} 个变更吗？`)) return
+  batchLoading.value = true
+  let done = 0; let err = 0
+  for (const id of selectedChanges.value) {
+    try {
+      await apiAdmin.approveChange(id)
+      done++
+    } catch (e) { err++ }
+  }
+  selectedChanges.value = new Set()
+  batchLoading.value = false
+  showMsg(`批量通过: ${done} 成功, ${err} 失败`, err > 0 ? 'error' : 'success')
+  await loadPendingChanges()
+}
+
+// 批量拒绝变更
+async function batchRejectChanges() {
+  if (selectedChanges.value.size === 0) return
+  if (!confirm(`确认批量拒绝 ${selectedChanges.value.size} 个变更吗？`)) return
+  batchLoading.value = true
+  let done = 0; let err = 0
+  for (const id of selectedChanges.value) {
+    try {
+      await apiAdmin.rejectChange(id)
+      done++
+    } catch (e) { err++ }
+  }
+  selectedChanges.value = new Set()
+  batchLoading.value = false
+  showMsg(`批量拒绝: ${done} 成功, ${err} 失败`, err > 0 ? 'error' : 'success')
+  await loadPendingChanges()
+}
+
+// 批量删除管理员
+async function batchRemoveUsers() {
+  if (selectedAllUsers.value.size === 0) return
+  if (!confirm(`确认批量删除 ${selectedAllUsers.value.size} 个管理员吗？此操作不可撤销。`)) return
+  batchLoading.value = true
+  let done = 0; let err = 0
+  for (const id of selectedAllUsers.value) {
+    try {
+      await apiAuth.deleteUser(id)
+      done++
+    } catch (e) { err++ }
+  }
+  selectedAllUsers.value = new Set()
+  batchLoading.value = false
+  showMsg(`批量删除: ${done} 成功, ${err} 失败`, err > 0 ? 'error' : 'success')
+  await loadUsers()
+}
 
 const moduleLabels = { cmd: '网络命令', fault: '网络故障', desktop: '桌面运维', linux: 'Linux', office: 'Office', ai: 'AI运维' }
 
@@ -532,6 +741,32 @@ onMounted(async () => {
 .super-table-na{color:#cbd5e1}
 .text-right{text-align:right}
 
+/* 表头 checkbox 水平居中 */
+.super-table th input[type="checkbox"] { margin: 0; vertical-align: middle; cursor: pointer; }
+
+/* 批量操作栏 */
+.super-batch-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;gap:12px}
+.super-batch-bar .super-batch-actions{display:flex;gap:8px}
+
+/* 复选框 */
+.super-checkbox-label{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#475569;cursor:pointer;user-select:none}
+.super-checkbox-label input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#2563eb}
+.super-checkbox-inline{flex-shrink:0;margin-right:4px}
+
+/* 小号按钮 */
+.super-btn-sm{padding:5px 12px;font-size:12px}
+.super-btn:disabled,.super-btn-sm:disabled{opacity:.45;cursor:not-allowed}
+
+/* 移动端适配 */
+@media (max-width: 640px) {
+  .super-topbar{padding:0 16px}
+  .super-main{padding:24px 16px}
+  .super-batch-bar{flex-direction:column;align-items:flex-start;gap:8px}
+  .super-batch-bar .super-batch-actions{width:100%;flex-wrap:wrap}
+  .super-list-item{flex-wrap:wrap;gap:8px}
+  .super-change-item .super-checkbox-inline{align-self:flex-start;margin-top:3px}
+}
+
 /* 空状态 */
 .super-empty{text-align:center;padding:40px 0;color:#94a3b8;font-size:14px}
 
@@ -543,17 +778,20 @@ onMounted(async () => {
 /* 详情面板 */
 .super-detail-panel{margin-top:12px;padding:16px;background:#fff;border:1px solid #e2e8f0;border-radius:8px}
 .super-detail-loading{text-align:center;color:#94a3b8;font-size:13px;padding:12px 0}
-.super-diff-intro{margin-bottom:10px;font-size:12px;color:#64748b}
+.super-diff-intro{margin-bottom:10px;font-size:12px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap}
 .super-diff-legend{display:flex;align-items:center;gap:6px}
 .super-diff-mark-changed{width:12px;height:12px;border-radius:3px;background:#fef3c7;border:1px solid #f59e0b;flex-shrink:0}
+.super-diff-mark-unchanged{width:12px;height:12px;border-radius:3px;background:#f1f5f9;border:1px solid #cbd5e1;flex-shrink:0}
 .super-diff-row{display:flex;align-items:flex-start;gap:12px;padding:8px 10px;border-radius:6px;margin-bottom:4px;transition:background .2s}
 .super-diff-row.super-diff-changed{background:#fffbeb;border:1px solid #fde68a}
+.super-diff-row.super-diff-unchanged{background:#f8fafc;border:1px solid transparent}
 .super-diff-label{font-size:12px;font-weight:600;color:#475569;min-width:70px;flex-shrink:0;padding-top:2px}
 .super-diff-values{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
 .super-diff-col{display:flex;align-items:flex-start;gap:6px;font-size:13px;line-height:1.5}
 .super-diff-tag-old{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#fee2e2;color:#dc2626;flex-shrink:0}
 .super-diff-tag-new{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#dbeafe;color:#2563eb;flex-shrink:0}
 .super-diff-text{word-break:break-all;color:#334155}
+.super-diff-unchanged-text{color:#94a3b8}
 .super-diff-content{flex:1;min-width:0}
 .super-diff-empty{text-align:center;color:#94a3b8;font-size:13px;padding:12px 0}
 

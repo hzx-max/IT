@@ -14,22 +14,22 @@
       <div v-else-if="error" class="text-center py-20 text-red-500">{{ error }}</div>
 
       <template v-else-if="item">
-        <div v-if="item.images && item.images.length > 0" class="detail-section">
-          <div class="detail-label">图片</div>
+        <div class="detail-section">
+          <div class="detail-label">图片/视频</div>
           <div class="media-grid">
-            <img v-for="(img, idx) in item.images" :key="idx" :src="img" class="media-img"
-              @click="previewImage = img" style="cursor:pointer">
+            <img v-for="(img, idx) in (item.images || [])" :key="'img-'+idx" :src="img" class="media-img" @click="previewImage = img" style="cursor:pointer">
+            <video v-for="(vid, idx) in (item.videos || [])" :key="'vid-'+idx" :src="vid" class="media-video" controls></video>
           </div>
+          <div v-if="(!item.images || item.images.length === 0) && (!item.videos || item.videos.length === 0)" class="detail-value text-slate-400">暂无图片/视频</div>
         </div>
-        <div v-if="item.videos && item.videos.length > 0" class="detail-section">
-          <div class="detail-label">视频</div>
-          <div class="media-grid">
-            <video v-for="(vid, idx) in item.videos" :key="idx" :src="vid" class="media-video" controls></video>
-          </div>
-        </div>
-        <div v-if="item?.files && item.files.length > 0" class="detail-section">
+
+        <div class="detail-section"><div class="detail-label">故障现象</div><div class="detail-value">{{ item.symptom || '暂无' }}</div></div>
+        <div class="detail-section"><div class="detail-label">故障原因</div><div class="detail-value">{{ item.cause || '暂无' }}</div></div>
+        <div class="detail-section"><div class="detail-label">解决方案</div><div class="detail-value">{{ item.solution || '暂无' }}</div></div>
+
+        <div class="detail-section">
           <div class="detail-label">附件</div>
-          <div class="file-list">
+          <div class="file-list" v-if="item.files && item.files.length > 0">
             <div v-for="(f, i) in item.files" :key="'file-'+i" class="file-row">
               <div class="file-icon" :style="{ background: getFileIconBg(f.name), color: getFileIconColor(f.name) }">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -43,13 +43,12 @@
               <a :href="f.url" :download="f.name" class="file-download-btn" @click.stop>下载</a>
             </div>
           </div>
+          <div v-else class="detail-value text-slate-400">暂无附件</div>
         </div>
-        <div v-if="item?.symptom" class="detail-section"><div class="detail-label">故障现象</div><div class="detail-value">{{ item.symptom }}</div></div>
-        <div v-if="item?.cause" class="detail-section"><div class="detail-label">故障原因</div><div class="detail-value">{{ item.cause }}</div></div>
-        <div v-if="item?.solution" class="detail-section"><div class="detail-label">解决方案</div><div class="detail-value">{{ item.solution }}</div></div>
+
         <div class="detail-footer">
-          <span v-if="item?.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
-          <span v-if="item?.category" class="tag-cat">{{ item.category }}</span>
+          <span class="tag-time">{{ formatTime(item.createdAt) }}</span>
+          <span class="tag-cat">{{ item.category }}</span>
         </div>
       </template>
     </div>

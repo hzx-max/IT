@@ -17,24 +17,27 @@
         <div class="text-center py-20 text-red-500">{{ error }}</div>
       </template>
       <template v-else-if="item">
-        <div v-if="item?.desc" class="detail-section"><div class="detail-label">描述</div><div class="detail-value">{{ item.desc }}</div></div>
+        <div class="detail-section"><div class="detail-label">描述</div><div class="detail-value">{{ item.desc || '暂无' }}</div></div>
 
-        <div v-if="item?.config" class="detail-section">
-          <div class="detail-label">配置内容</div>
-          <pre class="code-block">{{ item.config }}</pre>
-        </div>
-
-        <div v-if="(item?.images && item.images.length > 0) || (item?.videos && item.videos.length > 0)" class="detail-section">
+        <div class="detail-section">
           <div class="detail-label">图片/视频</div>
           <div class="media-grid">
-            <img v-for="(url, i) in item.images" :key="'img-'+i" :src="url" class="media-img" @click="openViewer(url)">
-            <video v-for="(url, i) in item.videos" :key="'vid-'+i" :src="url" class="media-video" controls></video>
+            <img v-for="(url, i) in (item.images || [])" :key="'img-'+i" :src="url" class="media-img" @click="openViewer(url)">
+            <video v-for="(url, i) in (item.videos || [])" :key="'vid-'+i" :src="url" class="media-video" controls></video>
           </div>
+          <div v-if="(!item.images || item.images.length === 0) && (!item.videos || item.videos.length === 0)" class="detail-value text-slate-400">暂无图片/视频</div>
         </div>
 
-        <div v-if="item?.files && item.files.length > 0" class="detail-section">
+        <div class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail || '暂无' }}</div></div>
+
+        <div class="detail-section">
+          <div class="detail-label">配置内容</div>
+          <pre class="code-block">{{ item.config || '暂无' }}</pre>
+        </div>
+
+        <div class="detail-section">
           <div class="detail-label">附件</div>
-          <div class="file-list">
+          <div class="file-list" v-if="item.files && item.files.length > 0">
             <div v-for="(f, i) in item.files" :key="'file-'+i" class="file-row">
               <div class="file-icon" :style="{ background: getFileIconBg(f.name), color: getFileIconColor(f.name) }">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -48,9 +51,8 @@
               <a :href="f.url" :download="f.name" class="file-download-btn" @click.stop>下载</a>
             </div>
           </div>
+          <div v-else class="detail-value text-slate-400">暂无附件</div>
         </div>
-
-        <div v-if="item?.detail" class="detail-section"><div class="detail-label">详细内容</div><div class="detail-value whitespace-pre-wrap">{{ item.detail }}</div></div>
 
         <div class="detail-section">
           <div class="detail-label mb-2">学习笔记</div>
@@ -62,9 +64,9 @@
         </div>
 
         <div class="detail-footer">
-          <span v-if="item?.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
+          <span class="tag-time">{{ formatTime(item.createdAt) }}</span>
           <span v-if="item?.vendor" class="tag-vendor" :style="{ background: getVendorColor(item.vendor, OFFICE_VENDOR_MAP)+'15', color: getVendorColor(item.vendor, OFFICE_VENDOR_MAP), borderColor: getVendorColor(item.vendor, OFFICE_VENDOR_MAP)+'40' }">{{ getVendorName(item.vendor, OFFICE_VENDOR_MAP) }}</span>
-          <span v-if="item?.cat" class="tag-cat">{{ getCatLabel(item.cat, OFFICE_CAT_MAP) }}</span>
+          <span class="tag-cat">{{ getCatLabel(item.cat, OFFICE_CAT_MAP) }}</span>
         </div>
       </template>
     </div>
