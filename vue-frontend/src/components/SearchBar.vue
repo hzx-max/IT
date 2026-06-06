@@ -60,20 +60,22 @@ async function loadHistory() {
   } catch { historyList.value = [] }
 }
 
-async function onEnter(e) {
-  const val = e.target.value.trim()
-  emit('enter', val)
-  showHistory.value = false
-}
-
-async function onSearchClick() {
-  const val = (props.modelValue || '').trim()
-  emit('enter', val)
-  if (val && props.module) {
-    try { await apiSearchHistory.save(props.module, val) } catch {}
+async function performSearch(val) {
+  const keyword = (val || '').trim()
+  emit('enter', keyword)
+  if (keyword && props.module) {
+    try { await apiSearchHistory.save(props.module, keyword) } catch {}
     await loadHistory()
   }
   showHistory.value = false
+}
+
+async function onEnter(e) {
+  await performSearch(e.target.value)
+}
+
+async function onSearchClick() {
+  await performSearch(props.modelValue)
 }
 
 function onSelect(keyword) {

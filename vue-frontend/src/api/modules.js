@@ -7,7 +7,8 @@ export const apiAuth = {
   me: () => http.get('/auth/me'),
   getUsers: () => http.get('/auth/users'),
   approveUser: (userId, approved) => http.post(`/auth/approve/${userId}`, { approved }),
-  deleteUser: (userId) => http.delete(`/auth/users/${userId}`)
+  deleteUser: (userId) => http.delete(`/auth/users/${userId}`),
+  checkUsername: (username) => http.get('/auth/check-username', { params: { username } })
 }
 
 export const apiAdmin = {

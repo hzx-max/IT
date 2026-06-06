@@ -37,6 +37,11 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    public boolean usernameExists(String username) {
+        if (username == null || username.isBlank()) return false;
+        return userRepository.existsByUsername(username.trim());
+    }
+
     @Transactional
     public Map<String, String> login(String username, String password) {
         Optional<User> opt = userRepository.findByUsername(username);

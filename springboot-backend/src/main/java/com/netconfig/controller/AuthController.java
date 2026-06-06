@@ -31,13 +31,30 @@ public class AuthController {
         }
         User user = authService.register(username.trim(), password);
         if (user == null) {
-            return ResponseEntity.ok(ApiResponse.success(Map.of("message", "注册申请已提交，等待审核")));
+            return ResponseEntity.status(409).body(ApiResponse.error("该用户名已被占用，请更换一个"));
         }
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "status", user.getStatus(),
                 "message", "注册成功，等待超级管理员审核"
+        )));
+    }
+
+    @GetMapping("/api/auth/check-username")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkUsername(@RequestParam("username") String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("用户名不能为空"));
+        }
+        String name = username.trim();
+        if (name.length() < 3 || name.length() > 20) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("用户名长度3-20位"));
+        }
+        boolean exists = authService.usernameExists(name);
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+                "username", name,
+                "available", !exists,
+                "exists", exists
         )));
     }
 
