@@ -76,13 +76,6 @@ public class DatabaseInitializer implements CommandLineRunner {
             """);
 
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS notes (
-                    cmd_id TEXT PRIMARY KEY,
-                    content TEXT DEFAULT ''
-                )
-            """);
-
-            stmt.execute("""
                 CREATE TABLE IF NOT EXISTS category_labels (
                     cat_key TEXT PRIMARY KEY,
                     cat_label TEXT NOT NULL
@@ -231,6 +224,17 @@ public class DatabaseInitializer implements CommandLineRunner {
                 )
             """);
 
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS note_reactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    note_id INTEGER NOT NULL,
+                    user_id TEXT NOT NULL,
+                    reaction_type TEXT NOT NULL,
+                    created_at TEXT DEFAULT '',
+                    UNIQUE(note_id, user_id)
+                )
+            """);
+
             // 初始化超级管理员账号（密码从配置读取，默认 admin123，
             // 启动后请立即修改！实际生产环境务必通过环境变量 ADMIN_DEFAULT_PASSWORD 设置强密码）
             try (PreparedStatement ps = conn.prepareStatement(
@@ -270,6 +274,23 @@ public class DatabaseInitializer implements CommandLineRunner {
                     stmt.execute("UPDATE " + table + " SET created_at=substr(datetime(created_at,'localtime'),1,16) WHERE created_at IS NOT NULL AND length(created_at)=19");
                 } catch (Exception ignored) {}
             }
+
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS user_profiles (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL UNIQUE,
+                    real_name TEXT DEFAULT '',
+                    email TEXT DEFAULT '',
+                    avatar TEXT DEFAULT '',
+                    bio TEXT DEFAULT '',
+                    created_at TEXT DEFAULT '',
+                    updated_at TEXT DEFAULT ''
+                )
+            """);
+
+            // 为 learning_notes 表添加新字段
+            try { stmt.execute("ALTER TABLE learning_notes ADD COLUMN dislike_count INTEGER DEFAULT 0"); } catch (Exception ignored) {}
+            try { stmt.execute("ALTER TABLE learning_notes ADD COLUMN parent_id INTEGER"); } catch (Exception ignored) {}
 
             System.out.println("[NetConfig] 数据库初始化完成: " + dbPath);
         }

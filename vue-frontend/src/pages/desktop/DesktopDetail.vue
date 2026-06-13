@@ -1,13 +1,17 @@
 <template>
   <MainLayout>
-    <div class="max-w-[960px] mx-auto export-pdf-area">
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[28px] font-bold">{{ item?.title || '加载中...' }}</h2>
-        <div class="flex gap-2.5 flex-wrap items-center">
-          <button class="btn btn-primary text-sm" @click="$router.push('/desktop/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
-          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
-          <button class="btn btn-ghost text-sm" @click="$router.back()">&larr; 返回</button>
+    <div class="detail-layout">
+    <div class="export-pdf-area pl-8 pb-4">
+      <div class="detail-actions">
+        <button class="detail-action-btn" @click="$router.push('/desktop')">← 返回</button>
+        <div class="flex gap-2.5">
+          <FavoriteButton module="desktop" :item="item" show-text v-if="item?.id" />
+          <button class="detail-action-btn" @click="$router.push('/desktop/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="detail-action-btn" @click="exportPDF">导出PDF</button>
         </div>
+      </div>
+      <div class="detail-section detail-title-section">
+        <h2 class="detail-title">{{ item?.title || '加载中...' }}</h2>
       </div>
 
       <div v-if="item?.category" class="detail-section"><div class="detail-label">分类</div><div class="detail-value">{{ item.category }}</div></div>
@@ -47,27 +51,34 @@
           <div v-else class="detail-value text-slate-400">暂无附件</div>
         </div>
 
+        <LearningNotes :targetId="$route.params.id" />
+
         <div class="detail-footer">
           <span class="tag-time">{{ formatTime(item.createdAt) }}</span>
           <span class="tag-cat">{{ item.category }}</span>
         </div>
       </template>
     </div>
+    <RelatedPanel :api-list="apiDesktop.list" :current-id="route.params.id" :current-cat="item?.cat" base-path="/desktop" />
+    </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { apiDesktop, formatTime } from '../../api/index.js'
+import LearningNotes from '../../components/LearningNotes.vue'
+import RelatedPanel from '../../components/RelatedPanel.vue'
+import FavoriteButton from '../../components/FavoriteButton.vue'
 import { exportPdf } from '../../utils/pdfExport.js'
+import { recordView } from '../../utils/userLibrary.js'
 
 const route = useRoute()
 const item = ref(null)
 const loading = ref(true)
 const error = ref('')
-
 function openViewer(url, type) {
   window.open(url, '_blank')
 }
@@ -132,16 +143,20 @@ async function exportPDF() {
   }, item.value?.title || '桌面运维')
 }
 
-onMounted(async () => {
+async function loadDetail(id) {
+  loading.value = true; error.value = ''
   try {
-    const res = await apiDesktop.get(route.params.id)
+    const res = await apiDesktop.get(id)
     item.value = res.data
+    recordView('desktop', item.value)
     if (item.value) {
       document.title = item.value.title + ' - IT运维学习平台'
     }
   } catch (e) { error.value = '加载失败: ' + e.message }
   finally { loading.value = false }
-})
+}
+watch(() => route.params.id, (id) => { if (id) loadDetail(id) })
+onMounted(() => { loadDetail(route.params.id) })
 </script>
 
 <style scoped>
@@ -156,14 +171,6 @@ onMounted(async () => {
 .media-img{width:100%;border-radius:6px;cursor:pointer;border:1.5px solid #e2e8f0;transition:transform .2s}
 .media-img:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .media-video{width:100%;border-radius:6px;border:1.5px solid #e2e8f0}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;transition:all .25s ease}
-.btn-primary{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
-.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
-.btn-pdf{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
-.btn-pdf:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
-.btn-pdf:disabled{opacity:.6;cursor:not-allowed}
-.btn-ghost{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-muted);text-decoration:none}
-.btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);transform:translateX(-2px)}
 /* 附件列表 */
 .file-list{display:flex;flex-direction:column;gap:8px}
 .file-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;transition:all .2s}
@@ -174,4 +181,5 @@ onMounted(async () => {
 .file-meta{font-size:12px;color:#94a3b8;margin-top:2px}
 .file-download-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0}
 .file-download-btn:hover{background:#1d4ed8}
+
 </style>

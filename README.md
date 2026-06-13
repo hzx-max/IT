@@ -1,787 +1,669 @@
-# IT 运维学习平台
+# IT 运维学习平台（NetConfig）
 
-> 涵盖网络命令、网络故障、桌面运维、Linux、Office、AI 运维等 IT 运维核心知识的综合学习与管理系统。
+> 面向 IT 运维工程师的综合知识管理与学习系统，涵盖网络命令、故障排查、桌面运维、Linux、Office 办公、AI 运维六大模块。
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue](https://img.shields.io/badge/Vue-3.4-brightgreen.svg)](https://vuejs.org/)
 [![JDK](https://img.shields.io/badge/JDK-17%2B-orange.svg)](https://adoptium.net/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.45-blue.svg)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/license-Private-lightgrey.svg)](#)
 
 ---
 
-## 📑 目录
+## 目录
 
-- [项目简介](#-项目简介)
-- [技术栈](#-技术栈)
-- [系统架构](#-系统架构)
-- [目录结构](#-目录结构)
-- [核心功能](#-核心功能)
-- [数据概览](#-数据概览)
-- [权限模型](#-权限模型)
-- [审核工作流](#-审核工作流)
-- [API 接口一览](#-api-接口一览)
-- [数据库](#-数据库)
-- [环境要求](#-环境要求)
-- [快速启动](#-快速启动)
-- [默认账号](#-默认账号)
-- [快捷键](#-快捷键)
-- [常见问题](#-常见问题)
+- [快速开始](#快速开始)
+- [系统架构](#系统架构)
+- [模块总览](#模块总览)
+- [前端架构](#前端架构)
+- [后端架构](#后端架构)
+- [API 文档](#api-文档)
+- [数据库](#数据库)
+- [权限体系](#权限体系)
+- [操作指南](#操作指南)
+- [技术细节](#技术细节)
+- [开发指南](#开发指南)
+- [部署](#部署)
+- [项目统计](#项目统计)
 
 ---
 
-## 📌 项目简介
+## 快速开始
 
-**IT 运维学习平台**（NetConfig）是一个面向 IT 运维工程师的综合学习与知识管理平台，针对 6 大 IT 运维核心领域提供：
+### 环境准备
 
-- 📚 **结构化知识库**：每条知识都包含描述、详细内容、拓扑图、配置命令、参考文档、验证命令、验证截图、附件等
-- 🔍 **多维筛选**：按模块、厂商、分类、关键字组合搜索
-- 📊 **数据可视化**：首页展示知识库总量、模块分布、点击量柱状图、TOP10 排行
-- 🛡️ **审核机制**：普通管理员提交变更需超级管理员审核，确保数据安全
-- 👥 **多角色管理**：游客 / 普通管理员 / 超级管理员三级权限
-- 📤 **PDF 导出**：详情页一键导出排版美观的 PDF 文档
-- 📝 **个人笔记**：每条命令支持跨设备同步笔记
-- 🔎 **搜索历史**：每模块独立保留最近 5 条搜索历史
+| 工具 | 最低版本 | 验证命令 |
+|------|----------|----------|
+| JDK | 17 | `java -version` |
+| Maven | 3.6 | `mvn -version` |
+| Node.js | 18 | `node -v` |
+| npm | 9 | `npm -v` |
 
----
-
-## 🛠 技术栈
-
-### 前端
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Vue | 3.4+ | 渐进式 UI 框架 |
-| Vue Router | 4.3+ | 单页面路由 |
-| Vite | 5.4+ | 构建工具 / 开发服务器 |
-| Tailwind CSS | 3.4+ | 原子化样式 |
-| Axios | 1.7+ | HTTP 请求 |
-| html2pdf.js | 0.10.1 | PDF 导出（CDN 加载） |
-
-### 后端
-
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Spring Boot | 3.2.5 | Web 框架 |
-| Spring Data JPA | 3.2.5 | ORM |
-| Spring Security | 3.2.5 | 安全框架 |
-| Hibernate | 6.x | JPA 实现 |
-| SQLite JDBC | 3.45.1.0 | 数据库驱动 |
-| Hibernate Community Dialects | - | SQLite 方言 |
-| Lombok | - | 简化 Java 代码 |
-| Jackson | - | JSON 序列化 |
-| Jakarta Servlet API | 6.0 | Servlet 规范 |
-
-### 数据库
-
-| 类型 | 文件 | 用途 |
-|------|------|------|
-| SQLite | `date.db` | 嵌入式数据库（零配置） |
-
-### 工具链
-
-| 工具 | 版本 | 用途 |
-|------|------|------|
-| JDK | 17+ | 后端运行时 |
-| Maven | 3.6+ | 后端构建 |
-| Node.js | 18+ | 前端构建 |
-| npm | 9+ | 前端依赖管理 |
-
----
-
-## 🏗 系统架构
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                        用户浏览器                              │
-│              http://localhost:3000                            │
-└──────────────────────────┬───────────────────────────────────┘
-                           │ (HTTP)
-                           ▼
-┌──────────────────────────────────────────────────────────────┐
-│              Vue 3 SPA  (Vite Dev Server)                    │
-│  - 路由 (vue-router)                                          │
-│  - 状态 (localStorage + composables)                          │
-│  - 组件 (Sidebar / SearchBar / FileUploader ...)              │
-└──────────────────────────┬───────────────────────────────────┘
-                           │ /api/* (Axios)
-                           ▼
-┌──────────────────────────────────────────────────────────────┐
-│           Spring Boot  (Tomcat :8080)                        │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Filter: RateLimitingFilter（登录限流）              │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Interceptor: AuthInterceptor（Token 鉴权）          │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Controllers  →  Services  →  Repositories          │    │
-│  │  (REST API)    (业务逻辑)     (JPA 数据访问)          │    │
-│  └─────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  DatabaseInitializer（应用启动时建表 + 默认数据）    │    │
-│  └─────────────────────────────────────────────────────┘    │
-└──────────────────────────┬───────────────────────────────────┘
-                           │ JDBC
-                           ▼
-                  ┌──────────────────┐
-                  │  SQLite: date.db │
-                  └──────────────────┘
-                           ▲
-                           │
-┌──────────────────────────┴───────────────────────────────────┐
-│              /uploads/* （静态文件，由 WebConfig 暴露）       │
-└──────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📂 目录结构
-
-```
-IT运维学习平台/
-├── date.db                    # SQLite 数据库（自动生成）
-├── date.db-shm                # SQLite WAL 模式共享内存
-├── date.db-wal                # SQLite WAL 模式日志
-│
-├── springboot-backend/        # 后端工程
-│   ├── pom.xml                # Maven 配置
-│   ├── mvnw / mvnw.cmd        # Maven Wrapper
-│   ├── start.bat / start.sh   # 启动脚本
-│   ├── uploads/               # 用户上传文件
-│   └── src/main/
-│       ├── java/com/netconfig/
-│       │   ├── NetConfigApplication.java    # SpringBoot 启动类
-│       │   ├── config/                       # 配置
-│       │   │   ├── CorsConfig.java
-│       │   │   ├── SecurityConfig.java
-│       │   │   ├── AuthInterceptor.java      # 鉴权拦截器
-│       │   │   ├── RateLimitingFilter.java   # 登录限流
-│       │   │   ├── DatabaseInitializer.java   # 建表 + 默认数据
-│       │   │   ├── WebConfig.java            # 静态资源映射
-│       │   │   ├── SpaForwardController.java # SPA fallback
-│       │   │   ├── ProjectRootConfig.java
-│       │   │   └── GlobalExceptionHandler.java
-│       │   ├── controller/                   # REST 控制器
-│       │   │   ├── AuthController.java
-│       │   │   ├── CommandController.java    # 网络命令
-│       │   │   ├── FaultController.java      # 网络故障
-│       │   │   ├── DesktopController.java    # 桌面运维
-│       │   │   ├── LinuxController.java      # Linux
-│       │   │   ├── OfficeController.java     # Office
-│       │   │   ├── AiTopicController.java    # AI 运维
-│       │   │   ├── CategoryController.java   # 分类管理
-│       │   │   ├── NoteController.java       # 笔记
-│       │   │   ├── ClickController.java      # 点击统计
-│       │   │   ├── SearchHistoryController.java
-│       │   │   ├── FileUploadController.java
-│       │   │   └── PendingChangeController.java # 审核
-│       │   ├── service/                      # 业务层
-│       │   │   ├── AuthService.java
-│       │   │   ├── CommandService.java
-│       │   │   ├── FaultService.java
-│       │   │   ├── DesktopService.java
-│       │   │   ├── LinuxService.java
-│       │   │   ├── OfficeService.java
-│       │   │   ├── AiTopicService.java
-│       │   │   ├── NoteService.java
-│       │   │   └── JsonUtil.java
-│       │   ├── repository/                   # JPA 仓储
-│       │   │   ├── UserRepository.java
-│       │   │   ├── UserTokenRepository.java
-│       │   │   ├── PendingChangeRepository.java
-│       │   │   ├── ClickRecordRepository.java
-│       │   │   ├── SearchHistoryRepository.java
-│       │   │   ├── NoteRepository.java
-│       │   │   ├── CommandTopicRepository.java
-│       │   │   ├── CommandConfigRepository.java
-│       │   │   ├── CategoryLabelRepository.java
-│       │   │   ├── CategoryExclusionRepository.java
-│       │   │   └── （每个模块一个 Repository）
-│       │   ├── entity/                       # JPA 实体
-│       │   │   ├── User.java
-│       │   │   ├── UserToken.java
-│       │   │   ├── PendingChange.java
-│       │   │   ├── ClickRecord.java
-│       │   │   ├── SearchHistory.java
-│       │   │   ├── Note.java
-│       │   │   ├── CommandTopic.java
-│       │   │   ├── CommandConfig.java
-│       │   │   ├── CategoryLabel.java
-│       │   │   ├── CategoryExclusion.java
-│       │   │   ├── Fault.java
-│       │   │   ├── Desktop.java
-│       │   │   ├── Linux.java
-│       │   │   ├── Office.java
-│       │   │   └── AiTopic.java
-│       │   └── dto/                          # 数据传输对象
-│       │       ├── ApiResponse.java          # 统一响应
-│       │       ├── CommandDTO.java
-│       │       ├── FaultDTO.java
-│       │       ├── DesktopDTO.java
-│       │       ├── LinuxDTO.java
-│       │       ├── OfficeDTO.java
-│       │       └── AiTopicDTO.java
-│       └── resources/
-│           ├── application.properties        # SpringBoot 配置
-│           └── static/                       # 静态文件目录
-│
-├── vue-frontend/              # 前端工程
-│   ├── package.json           # npm 配置
-│   ├── vite.config.js         # Vite 配置（含 /api 代理）
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── src/
-│       ├── main.js            # 入口
-│       ├── App.vue            # 根组件
-│       ├── api/               # API 层
-│       │   ├── http.js        # Axios 实例
-│       │   ├── modules.js     # 各模块 API
-│       │   ├── approval.js    # 审核流封装
-│       │   └── constants.js   # 厂商/分类/格式化常量
-│       ├── assets/            # 静态资源
-│       │   └── main.css       # 全局样式
-│       ├── components/        # 通用组件
-│       │   ├── Sidebar.vue
-│       │   ├── NavDropdown.vue
-│       │   ├── SearchBar.vue
-│       │   ├── CategoryStrip.vue
-│       │   ├── CardCarousel.vue
-│       │   ├── FileUploader.vue
-│       │   ├── ComboBox.vue
-│       │   ├── ModalDialog.vue
-│       │   └── ToastMessage.vue
-│       ├── composables/       # 组合式函数
-│       ├── layouts/           # 布局
-│       │   └── MainLayout.vue
-│       ├── pages/             # 页面
-│       │   ├── HomePage.vue   # 首页（数据概览）
-│       │   ├── auth/          # 认证模块
-│       │   │   ├── LoginPage.vue
-│       │   │   ├── RegisterPage.vue
-│       │   │   └── SuperAdminPage.vue
-│       │   ├── cmd/           # 网络命令
-│       │   │   ├── CmdList.vue
-│       │   │   ├── CmdDetail.vue
-│       │   │   ├── CmdAdmin.vue
-│       │   │   ├── CmdAdd.vue
-│       │   │   └── CmdEdit.vue
-│       │   ├── fault/         # 网络故障（同上 5 个）
-│       │   ├── desktop/       # 桌面运维（同上 5 个）
-│       │   ├── linux/         # Linux（同上 5 个）
-│       │   ├── office/        # Office（同上 5 个）
-│       │   └── ai/            # AI 运维（同上 5 个）
-│       ├── router/
-│       │   └── index.js       # 路由 + 守卫
-│       ├── stores/
-│       │   └── auth.js        # 认证状态（localStorage）
-│       └── utils/
-│           └── pdfExport.js   # PDF 导出工具
-│
-└── uploads/                   # 上传文件副本目录（开发环境）
-```
-
----
-
-## 🎯 核心功能
-
-### 🏠 首页
-
-- 6 大模块入口卡片（带渐变图标）
-- 数据概览面板
-  - 知识库总量
-  - 各模块条目数（点击跳转）
-  - 各模块点击量竖直柱状图
-  - 6 个 TOP10 排行面板
-- 登录态显示用户信息、角色徽章
-
-### 🔐 认证模块
-
-| 功能 | 描述 |
-|------|------|
-| 注册 | 提交后状态为 `PENDING`，需超级管理员审批 |
-| 登录 | 返回 Token + username + role，写入 localStorage |
-| 退出 | 删除 localStorage，跳转首页 |
-| 登录限流 | 同 IP 5 分钟内最多 5 次失败尝试 |
-| 个人信息 | `GET /api/auth/me` |
-
-### 📚 6 大知识模块
-
-每个模块都包含以下页面：
-
-| 页面 | 路径 | 功能 |
-|------|------|------|
-| 列表 | `/{module}` | 卡片网格 + 搜索 + 厂商/分类筛选 + 分类标签条 |
-| 详情 | `/{module}/detail/:id` | 完整内容 + 多厂商配置 + 拓扑图 + 笔记 + PDF 导出 |
-| 管理 | `/{module}/admin` | 表格 + 批量选择 + 批量删除 + 行内操作 |
-| 新增 | `/{module}/add` | 表单（多厂商配置 + 文件上传 + 富文本） |
-| 编辑 | `/{module}/edit/:id` | 同上，预填数据 |
-
-#### 模块说明
-
-| 模块 | 路径 | 特色 |
-|------|------|------|
-| **网络命令** | `/cmd` | 多厂商（华为/H3C/Cisco/锐捷），每家含配置命令/说明/参考文档/验证命令/验证截图 |
-| **网络故障** | `/fault` | 故障现象/原因分析/解决方案 |
-| **桌面运维** | `/desktop` | 桌面系统常见问题 |
-| **Linux** | `/linux` | 多发行版（CentOS/Ubuntu/Debian） |
-| **Office** | `/office` | Word/Excel/PPT 操作 |
-| **AI 运维** | `/ai` | ChatGPT/Copilot/Claude 应用 |
-
-### 🛠 通用功能
-
-| 功能 | 描述 |
-|------|------|
-| 搜索 | 支持标题/描述模糊搜索 |
-| 厂商筛选 | 各模块独立的厂商下拉 |
-| 分类筛选 | 分类下拉 + 横向标签条 |
-| 搜索历史 | 每模块最多 5 条，独立保存 |
-| 多图轮播 | 列表卡片展示拓扑图 |
-| 拓扑图/截图 | 详情页网格 + 点击放大 |
-| 附件管理 | 多格式文件上传/下载 |
-| 个人笔记 | 每条命令独立笔记，跨设备同步 |
-| PDF 导出 | 一键导出详情页为 PDF |
-| 点击量统计 | 访问详情页自动累加 |
-
-### 🏷️ 分类管理
-
-- 分类键值对（key → label）
-- 分类排除（从筛选中隐藏特定分类）
-
-### 📊 点击量统计
-
-- 自动累计每个 module + itemId 的访问次数
-- 实时显示各模块总点击量
-- 全站 TOP10 + 每模块 TOP10
-- 自动清理孤立记录（引用的数据删除后点击记录自动清除）
-
-### 📤 文件上传
-
-- 路径：`POST /api/upload`
-- 大小限制：100MB
-- 支持格式：图片 / PDF / Word / Excel / PPT / TXT / Markdown / CSV / ZIP / RAR / 7Z / TAR / GZ
-- 双重校验：扩展名 + MIME 前缀
-- 文件 URL：`/uploads/{uuid}.{ext}`
-
----
-
-## 📈 数据概览
-
-首页数据概览面板展示：
-
-```
-┌─────────────────────────────────────────────────────┐
-│  数据概览          知识库总量：1234 条                 │
-├─────────────────────────────────────────────────────┤
-│  [网络命令 100] [网络故障 200] [桌面运维 150]         │
-│  [Linux 300]    [Office 250]   [AI运维 234]          │
-├─────────────────────────────────────────────────────┤
-│  各模块点击量分布                                    │
-│  ▇▇▇▇  命令                                          │
-│  ▇▇▇   故障                                          │
-│  ▇▇    桌面                                          │
-│  ...                                                 │
-├─────────────────────────────────────────────────────┤
-│  6 个 TOP10 排行（每个模块独立）                      │
-│  #1 标题... 123次                                    │
-│  #2 标题... 100次                                    │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 🛡️ 权限模型
-
-### 三级角色
-
-| 角色 | 代号 | 权限 |
-|------|------|------|
-| 游客 | - | 浏览所有公开内容 |
-| 普通管理员 | `ADMIN` | 浏览 + 提交增删改（需审核）+ 编辑笔记 |
-| 超级管理员 | `SUPER_ADMIN` | 全部权限 + 直接执行 + 审核 + 用户管理 |
-
-### 鉴权流程
-
-```
-请求 → RateLimitingFilter
-     → AuthInterceptor (Token 验证)
-     → 路由分发
-     → Controller
-     → Service
-     → Repository
-     → SQLite
-```
-
-### 接口权限
-
-| 接口前缀 | 权限要求 |
-|----------|----------|
-| `GET /api/auth/login`、`register` | 公开 |
-| `GET /api/clicks/*` | 公开 |
-| `POST /api/auth/logout` | 需登录 |
-| `GET /api/auth/me` | 需登录 |
-| `GET /api/auth/users` | 需 SUPER_ADMIN |
-| `POST /api/auth/approve/*` | 需 SUPER_ADMIN |
-| `DELETE /api/auth/users/*` | 需 SUPER_ADMIN |
-| `POST /api/admin/pending-change` | 需 ADMIN 或 SUPER_ADMIN |
-| `GET /api/admin/pending-changes` | 需 SUPER_ADMIN |
-| `POST /api/admin/pending-change/*/approve\|reject` | 需 SUPER_ADMIN |
-| `GET /api/*/{module}`（读） | 公开 |
-| `POST/PUT/DELETE /api/*/{module}`（写） | 需 ADMIN 或 SUPER_ADMIN |
-
----
-
-## ✅ 审核工作流
-
-**核心特色**：普通管理员的写操作不直接入库，而是进入待审核队列。
-
-```
-普通管理员 ADMIN
-  │
-  ├─→ 在 /cmd/add 提交新增表单
-  │
-  ▼
-submitWithApproval(module, 'CREATE', payload, null, directApiCall)
-  │
-  ├─ 角色 = SUPER_ADMIN → 直接调用 directApiCall() 立即生效
-  │
-  └─ 角色 = ADMIN       → POST /api/admin/pending-change
-                              │
-                              ▼
-                       pending_changes 表新增记录
-                       (PENDING 状态)
-                              │
-                              ▼
-                       超级管理员在 /super-admin 看到列表
-                              │
-                              ├─ 批准 → POST /api/admin/pending-change/{id}/approve
-                              │         → executeChange() → 调用对应 Service
-                              │         → 改状态为 APPROVED
-                              │
-                              └─ 拒绝 → POST /api/admin/pending-change/{id}/reject
-                                        → 改状态为 REJECTED
-```
-
-### 变更记录字段
-
-| 字段 | 说明 |
-|------|------|
-| `id` | 自增主键 |
-| `module` | 模块名（cmd / fault / desktop / linux / office / ai） |
-| `operation` | 操作（CREATE / UPDATE / DELETE） |
-| `entityId` | 实体 ID（CREATE 时可空） |
-| `payload` | 完整请求数据（JSON 字符串） |
-| `submitterId` | 提交人 ID |
-| `submitterName` | 提交人用户名 |
-| `status` | 状态（PENDING / APPROVED / REJECTED） |
-| `createdAt` | 提交时间 |
-| `approvedAt` | 审批时间 |
-| `approvedBy` | 审批人 |
-
----
-
-## 🔌 API 接口一览
-
-> 所有响应统一格式：`{ "ok": boolean, "data": T, "error": string, "msg": string }`
-
-### 认证
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| POST | `/api/auth/register` | 公开 | 注册（待审核） |
-| POST | `/api/auth/login` | 公开 | 登录（限流 5次/5分钟） |
-| POST | `/api/auth/logout` | 登录 | 退出 |
-| GET | `/api/auth/me` | 登录 | 当前用户 |
-| GET | `/api/auth/users` | SUPER_ADMIN | 全部用户 |
-| POST | `/api/auth/approve/{userId}` | SUPER_ADMIN | 审批用户 |
-| DELETE | `/api/auth/users/{userId}` | SUPER_ADMIN | 删除用户 |
-
-### 知识模块（6 个模块同构）
-
-`{module}` ∈ { `topics`, `faults`, `desktop`, `linux`, `office`, `ai` }
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| GET | `/api/{module}` | 公开 | 列表 |
-| GET | `/api/{module}/{id}` | 公开 | 详情 |
-| POST | `/api/{module}` | 管理员 | 新增 |
-| PUT | `/api/{module}/{id}` | 管理员 | 更新 |
-| DELETE | `/api/{module}/{id}` | 管理员 | 删除 |
-| POST | `/api/{module}/batch-delete` | 管理员 | 批量删除 |
-
-### 笔记
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| GET | `/api/notes/{cmdId}` | 登录 | 读取笔记 |
-| PUT | `/api/notes/{cmdId}` | 登录 | 保存笔记 |
-
-### 分类
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| GET | `/api/categories` | 公开 | 全部分类标签 |
-| POST | `/api/categories` | 管理员 | 新增/更新 |
-| DELETE | `/api/categories/{key}` | 管理员 | 删除 |
-| GET | `/api/categories/exclusions` | 公开 | 排除列表 |
-| POST | `/api/categories/exclusions` | 管理员 | 添加排除 |
-| DELETE | `/api/categories/exclusions/{key}` | 管理员 | 移除排除 |
-
-### 点击统计
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| POST | `/api/clicks/record` | 公开 | 记录点击 |
-| GET | `/api/clicks/stats` | 公开 | 各模块总点击量 |
-| GET | `/api/clicks/top10` | 公开 | 全站 TOP10 |
-| GET | `/api/clicks/top10/{module}` | 公开 | 单模块 TOP10 |
-
-### 搜索历史
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| GET | `/api/search-history/{module}` | 登录 | 历史列表（最近 5 条） |
-| POST | `/api/search-history` | 登录 | 保存历史（去重） |
-| DELETE | `/api/search-history/{module}/{id}` | 登录 | 单条删除 |
-| DELETE | `/api/search-history/{module}` | 登录 | 清空模块历史 |
-
-### 审核
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| POST | `/api/admin/pending-change` | 管理员 | 提交待审核变更 |
-| GET | `/api/admin/pending-changes` | SUPER_ADMIN | 待审核列表 |
-| POST | `/api/admin/pending-change/{id}/approve` | SUPER_ADMIN | 批准 |
-| POST | `/api/admin/pending-change/{id}/reject` | SUPER_ADMIN | 拒绝 |
-
-### 文件
-
-| 方法 | 路径 | 权限 | 描述 |
-|------|------|------|------|
-| POST | `/api/upload` | 登录 | 上传文件（≤100MB） |
-| GET | `/uploads/{filename}` | 公开 | 访问上传文件 |
-
----
-
-## 🗄 数据库
-
-SQLite 数据库，启动时自动建表（`ddl-auto=update`）。
-
-### 表结构
-
-| 表名 | 主要字段 |
-|------|----------|
-| `users` | id, username, password, role, status, created_at |
-| `user_tokens` | id, user_id, token, expired_at |
-| `command_topics` | id, title, cat, topo(json), desc, detail, created_at |
-| `command_configs` | id, topic_id, vendor, config, comment, doc, verification_cmd, verification_images(json) |
-| `notes` | cmd_id(PK), content |
-| `category_labels` | cat_key(PK), cat_label |
-| `category_exclusions` | cat_key(PK) |
-| `faults` | id, title, cat, desc, detail, files(json), created_at |
-| `desktops` | 同上 |
-| `linux` | id, title, vendor, cat, desc, detail, files(json), created_at |
-| `office` | id, title, cat, desc, detail, files(json), created_at |
-| `ai_topics` | id, title, cat, desc, detail, files(json), created_at |
-| `click_records` | id, module, item_id, item_title, count |
-| `search_history` | id, module, keyword, searched_at |
-| `pending_changes` | id, module, operation, entity_id, payload(json), submitter_id, submitter_name, status, created_at, approved_at, approved_by |
-
----
-
-## ⚙️ 环境要求
-
-| 工具 | 最低版本 | 推荐版本 | 说明 |
-|------|----------|----------|------|
-| **JDK** | 17 | 21 LTS | Spring Boot 3.2 要求 |
-| **Maven** | 3.6 | 3.9+ | 后端构建 |
-| **Node.js** | 18 | 20 LTS | 前端构建 |
-| **npm** | 9 | 10+ | 前端依赖管理 |
-| **磁盘空间** | 2GB | - | 包含依赖与上传文件 |
-| **内存** | 2GB | 4GB+ | - |
-
-> **注意**：SQLite 数据库文件 `date.db` 会在首次启动时自动创建。
-
----
-
-## 🚀 快速启动
-
-### 方式一：使用启动脚本（推荐 Windows）
-
-#### 1. 安装前置环境
-
-```powershell
-# 验证 Java
-java -version
-
-# 验证 Maven
-mvn -version
-
-# 验证 Node.js
-node -v
-npm -v
-```
-
-#### 2. 启动后端
-
-双击运行 `springboot-backend/start.bat`，或在终端执行：
+### 启动后端
 
 ```powershell
 cd springboot-backend
 mvn spring-boot:run
 ```
 
-后端启动后访问 http://localhost:8080
+首次启动会自动创建 `date.db` 及所有表，并初始化默认管理员账号。
 
-#### 3. 启动前端（新开一个终端）
+后端运行在 `http://localhost:8080`
+
+### 启动前端（新开终端）
 
 ```powershell
 cd vue-frontend
-npm install   # 首次运行需要安装依赖
+npm install       # 首次运行需要安装依赖
 npm run dev
 ```
 
-前端启动后访问 http://localhost:3000
+前端运行在 `http://localhost:3000`
 
-### 方式二：使用预编译 JAR
-
-```powershell
-# 后端
-cd springboot-backend
-mvn clean package -DskipTests
-java -jar target/netconfig-backend-1.0.0.jar
-```
-
-### 方式三：生产构建
+### 静默启动（推荐）
 
 ```powershell
-# 前端打包
-cd vue-frontend
-npm run build   # 输出到 dist/
+# 后端（端口 8080，后台静默运行）
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location -LiteralPath 'D:\桌面\IT运维学习平台\springboot-backend'; .\mvnw spring-boot:run" -WindowStyle Hidden
 
-# 后端打包
-cd ../springboot-backend
-mvn clean package
+# 前端（端口 3000，后台静默运行）
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location -LiteralPath 'D:\桌面\IT运维学习平台\vue-frontend'; npm run dev" -WindowStyle Hidden
 ```
 
 ### 端口说明
 
-| 端口 | 服务 | 备注 |
+| 端口 | 服务 | 配置位置 |
+|------|------|----------|
+| 3000 | Vue 前端（Vite Dev Server） | `vue-frontend/vite.config.js` |
+| 8080 | Spring Boot 后端（Tomcat） | `springboot-backend/src/main/resources/application.properties` |
+
+---
+
+## 系统架构
+
+```
+用户浏览器 (localhost:3000)
+       │
+       │ HTTP / Axios
+       ▼
+Vue 3 SPA（Vite Dev Server / Nginx）
+  ├── 路由 (vue-router, 31 条路由)
+  ├── 13 个共享组件
+  ├── 30 个页面组件（6 模块 × 5 页面）
+  ├── Tailwind CSS + 自定义全局样式
+  └── html2pdf.js（PDF 导出）
+       │
+       │ /api/* (Axios, baseURL: /api)
+       ▼
+Spring Boot 3.2.5（Tomcat :8080）
+  ├── Filter: RateLimitingFilter（登录限流）
+  ├── Interceptor: AuthInterceptor（自定义 Token 鉴权 + CSRF 校验）
+  ├── Controllers (14 个) → Services (11 个) → Repositories (17 个)
+  │   ├── 业务模块: Command / Fault / Desktop / Linux / Office / AI
+  │   ├── 通用模块: Auth / Profile / Upload / Click / Category / SearchHistory
+  │   └── 审核流程: PendingChange
+  ├── Config: WebConfig / CorsConfig / SecurityConfig / SpaForwardController
+  └── DatabaseInitializer（启动时自动建表 + 初始化数据）
+       │
+       │ JDBC (SQLite)
+       ▼
+SQLite: date.db（嵌入式，零配置，单文件）
+```
+
+**详细请求流程：**
+1. 浏览器访问 `localhost:3000` → Vite Dev Server 提供 Vue SPA
+2. Vue 通过 Axios 代理（`/api` → `localhost:8080`）发送 HTTP 请求
+3. 后端 `RateLimitingFilter` 对登录接口进行 IP 级别限流
+4. `AuthInterceptor` 拦截所有 `/api/**` 请求，校验 Token 和权限
+5. Controller 接收请求 → Service 处理业务逻辑 → Repository 存取数据库
+6. 响应返回 JSON → Vue 渲染页面
+
+---
+
+## 模块总览
+
+### 1. 网络命令（Command）— `/cmd/*`
+
+**定位：** 网络设备配置命令库，按厂商分类的多配置版本管理。
+
+**数据字段：** `id, title, cat, desc, detail, topo, configs: [{vendor, config, comment, doc, verificationCmd, verificationImages}], files, createdAt`
+
+- **多厂商配置：** 一个知识点可包含华为、H3C、思科、锐捷、烽火、迈普、中兴 7 个厂商的配置命令
+- **配置版本对比：** 每个厂商有独立配置文本、说明、验证命令、参考文档
+- **拓扑图：** 关联网络拓扑图片/视频
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
 |------|------|------|
-| 3000 | Vue 前端（Vite Dev） | `vite.config.js` 中 `server.port: 3000` |
-| 8080 | Spring Boot 后端 | `application.properties` 中 `server.port=8080` |
+| `/cmd` | `CmdList.vue` | 卡片列表：搜索、分类筛选、拓扑图轮播、厂商标签 |
+| `/cmd/detail/:id` | `CmdDetail.vue` | 详情：描述、拓扑图、厂商配置选项卡、PDF 导出、评论区 |
+| `/cmd/admin` | `CmdAdmin.vue` | 管理表：复选框批量删除、行操作下拉（查看/编辑/删除） |
+| `/cmd/add` | `CmdAdd.vue` | 添加表单：标题、分类、拓扑图、多厂商配置块、附件 |
+| `/cmd/edit/:id` | `CmdEdit.vue` | 编辑表单（预填充，审核流程） |
 
-### 跨域处理
+### 2. 网络故障（Fault）— `/fault/*`
 
-开发环境由 Vite 代理处理（`/api/*` 和 `/uploads/*` 代理到后端），生产环境需要 Nginx 反向代理或后端 `CorsConfig` 配置。
+**定位：** 常见网络故障及排查方法的案例库。
+
+**数据字段：** `id, title, category, images, videos, symptom, cause, solution, files, createdAt`
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
+|------|------|------|
+| `/fault` | `FaultList.vue` | 卡片列表：图片/视频轮播、症状摘要 |
+| `/fault/detail/:id` | `FaultDetail.vue` | 详情：症状、原因、解决方案、附件下载、评论区 |
+| `/fault/admin` | `FaultAdmin.vue` | 管理表 |
+| `/fault/add` | `FaultAdd.vue` | 添加表单 |
+| `/fault/edit/:id` | `FaultEdit.vue` | 编辑表单 |
+
+### 3. 桌面运维（Desktop）— `/desktop/*`
+
+**定位：** 桌面终端常见问题与解决方案库。
+
+**数据字段：** `id, title, category, images, videos, symptom, solution, files, createdAt`
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
+|------|------|------|
+| `/desktop` | `DesktopList.vue` | 卡片列表 |
+| `/desktop/detail/:id` | `DesktopDetail.vue` | 详情：症状、解决方案、附件 |
+| `/desktop/admin` | `DesktopAdmin.vue` | 管理表 |
+| `/desktop/add` | `DesktopAdd.vue` | 添加表单 |
+| `/desktop/edit/:id` | `DesktopEdit.vue` | 编辑表单 |
+
+### 4. Linux — `/linux/*`
+
+**定位：** Linux 系统管理与配置指南。
+
+**数据字段：** `id, title, vendor, cat, images, videos, desc, detail, config, verificationCmd, files, createdAt`
+
+- **发行版分类：** CentOS、Ubuntu、Debian、RedHat、SUSE、Rocky、Alpine、Arch 等
+- **分类标签：** 基础、文件、用户、网络、服务、磁盘、包管理、进程、防火墙、Shell、定时任务、备份、监控、安全
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
+|------|------|------|
+| `/linux` | `LinuxList.vue` | 卡片列表：发行版 + 分类双标签 |
+| `/linux/detail/:id` | `LinuxDetail.vue` | 详情：配置命令、验证命令 |
+| `/linux/admin` | `LinuxAdmin.vue` | 管理表（发行版 + 分类列） |
+| `/linux/add` | `LinuxAdd.vue` | 添加表单 |
+| `/linux/edit/:id` | `LinuxEdit.vue` | 编辑表单 |
+
+### 5. Office 办公 — `/office/*`
+
+**定位：** Office 办公软件使用技巧与配置指南。
+
+**数据字段：** `id, title, vendor, cat, images, videos, desc, detail, config, configComment, doc, verificationCmd, files, createdAt`
+
+- **办公软件：** Word、Excel、PPT、Outlook、WPS（Word/Excel/PPT）、LibreOffice
+- **分类标签：** 基础、格式、公式、图表、数据、邮件、宏、模板、打印、共享、安全、快捷键、样式、插入
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
+|------|------|------|
+| `/office` | `OfficeList.vue` | 卡片列表 |
+| `/office/detail/:id` | `OfficeDetail.vue` | 详情：配置内容、注释、文档 |
+| `/office/admin` | `OfficeAdmin.vue` | 管理表 |
+| `/office/add` | `OfficeAdd.vue` | 添加表单 |
+| `/office/edit/:id` | `OfficeEdit.vue` | 编辑表单 |
+
+### 6. AI 运维 — `/ai/*`
+
+**定位：** AI 运维相关知识与提示词工程指南。
+
+**数据字段：** `id, title, category, scenario, images, videos, prompt, config, desc, detail, files, createdAt`
+
+- **特色字段：** `scenario`（场景描述）、`prompt`（提示词，代码块展示）、`config`（配置内容）
+
+**页面列表：**
+| 路由 | 页面 | 描述 |
+|------|------|------|
+| `/ai` | `AiList.vue` | 卡片列表：场景预览 |
+| `/ai/detail/:id` | `AiDetail.vue` | 详情：提示词代码块、配置代码块 |
+| `/ai/admin` | `AiAdmin.vue` | 管理表 |
+| `/ai/add` | `AiAdd.vue` | 添加表单 |
+| `/ai/edit/:id` | `AiEdit.vue` | 编辑表单 |
 
 ---
 
-## 👤 默认账号
+## 前端架构
 
-应用首次启动时会在 `users` 表创建默认超级管理员：
+### 技术栈
 
-| 用户名 | 密码 | 角色 | 状态 |
-|--------|------|------|------|
-| `admin` | `admin123` | `SUPER_ADMIN` | `APPROVED` |
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| Vue | 3.4+ | 渐进式 UI 框架（Composition API + `<script setup>`） |
+| Vue Router | 4.3+ | 单页面路由（`createWebHistory` 模式） |
+| Vite | 5.4+ | 构建工具 + 开发服务器 |
+| Tailwind CSS | 3.4+ | 原子化样式框架 |
+| Axios | 1.7+ | HTTP 请求库 |
+| html2pdf.js | 0.10.1 | PDF 导出（动态 CDN 加载） |
 
-> ⚠️ **生产环境请立即修改默认密码！**
+### 目录结构
+
+```
+vue-frontend/src/
+├── api/
+│   ├── index.js         # 统一导出
+│   ├── http.js          # Axios 实例（拦截器、Token 注入）
+│   ├── modules.js       # 全部 API 端点（13 个模块）
+│   ├── constants.js     # 厂商/分类枚举 + 颜色映射 + 日期格式化
+│   └── approval.js      # 审核工作流辅助函数
+├── assets/
+│   └── main.css         # 全局样式（710 行：变量、按钮系统、布局、动画）
+├── components/          # 共享组件（13 个）
+├── composables/         # 组合式函数
+│   └── useSidebarCollapse.js   # 侧边栏折叠/位置状态
+├── layouts/
+│   └── MainLayout.vue   # 应用外壳（侧边栏 + 内容区 + 响应式）
+├── pages/               # 页面组件（30 个）
+│   ├── HomePage.vue     # 首页仪表盘
+│   ├── auth/            # 认证模块（5 个文件）
+│   │   ├── AuthPage.vue       # 登录/注册滑动面板
+│   │   ├── LoginPage.vue      # 登录页包装
+│   │   ├── RegisterPage.vue   # 注册页包装
+│   │   ├── ProfilePage.vue    # 个人中心（头像、资料编辑、历史/收藏）
+│   │   └── SuperAdminPage.vue # 超级管理员面板（用户管理、审核变更）
+│   ├── cmd/             # 网络命令模块（5 个页面）
+│   ├── fault/           # 故障排查模块（5 个页面）
+│   ├── desktop/         # 桌面运维模块（5 个页面）
+│   ├── linux/           # Linux 模块（5 个页面）
+│   ├── office/          # Office 模块（5 个页面）
+│   └── ai/              # AI 运维模块（5 个页面）
+├── router/
+│   └── index.js         # 路由配置（31 条路由 + 导航守卫）
+├── stores/
+│   └── auth.js          # 权限状态管理（Token、用户名、角色）
+├── utils/
+│   ├── pdfExport.js     # PDF 导出引擎（html2canvas + html2pdf）
+│   └── userLibrary.js   # 本地浏览历史与收藏（localStorage）
+├── App.vue              # 根组件（Token 校验 + 全局快捷键）
+└── main.js              # 入口
+```
+
+### 共享组件一览
+
+| 组件 | 文件 | 行数 | 用途 |
+|------|------|------|------|
+| Sidebar | `Sidebar.vue` | 290 | 可折叠/拖拽侧边栏导航，含 6 个模块分组菜单 |
+| NavDropdown | `NavDropdown.vue` | 63 | 侧边栏菜单折叠子项 |
+| SearchBar | `SearchBar.vue` | 160 | 全局搜索栏：关键词 + 供应商/分类下拉 + 搜索历史 |
+| CategoryStrip | `CategoryStrip.vue` | 14 | 横向分类筛选胶囊按钮 |
+| CardCarousel | `CardCarousel.vue` | 138 | 图片/视频轮播（自动播放 + 悬停放大） |
+| DropdownSelect | `DropdownSelect.vue` | 109 | 通用下拉选择器（支持紧凑模式） |
+| ComboBox | `ComboBox.vue` | 196 | 可搜索下拉框 + 分类管理（增删改） |
+| ModalDialog | `ModalDialog.vue` | 55 | 确认/输入弹窗 |
+| ToastMessage | `ToastMessage.vue` | 25 | 自动消失的通知提示 |
+| FileUploader | `FileUploader.vue` | 287 | 拖拽文件上传（50+ 扩展名，10 种类型图标） |
+| RelatedPanel | `RelatedPanel.vue` | 300 | 同类别内容浮动面板（可拖拽切换左/右/收起） |
+| LearningNotes | `LearningNotes.vue` | 385 | 评论系统（点赞/回复/排序/审核） |
+| FavoriteButton | `FavoriteButton.vue` | 44 | 收藏按钮（localStorage） |
+
+### 路由结构
+
+31 条路由，按模块分组：
+
+| 路由模式 | 页面数 | 说明 |
+|----------|--------|------|
+| `/` | 1 | 首页仪表盘 |
+| `/login`, `/register` | 2 | 登录/注册（共用 AuthPage） |
+| `/super-admin` | 1 | 超级管理员面板 |
+| `/profile` | 1 | 个人中心 |
+| `/{module}` | 1 | 模块列表页 |
+| `/{module}/detail/:id` | 1 | 详情页 |
+| `/{module}/admin` | 1 | 管理页（需认证） |
+| `/{module}/add` | 1 | 添加页（需认证） |
+| `/{module}/edit/:id` | 1 | 编辑页（需认证） |
+
+**导航守卫：** `router.beforeEach` 检查 `meta.requiresAuth`，未登录重定向到 `/login`；`requiresSuperAdmin` 额外检查 `SUPER_ADMIN` 角色；已登录用户访问登录页自动跳转至首页。
 
 ---
 
-## ⌨️ 快捷键
+## 后端架构
 
-| 快捷键 | 功能 |
-|--------|------|
-| `ESC` | 关闭移动端侧边栏 |
-| `Ctrl+K` | 搜索（提示在侧边栏底部） |
+### 技术栈
+
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| Spring Boot | 3.2.5 | Web 框架 |
+| Spring Data JPA | 3.2.5 | ORM / 数据访问 |
+| Hibernate | 6.x | JPA 实现 |
+| SQLite JDBC | 3.45.1.0 | 数据库驱动 |
+| Hibernate Community Dialects | 6.x | SQLite 方言支持 |
+| Lombok | 1.18+ | `@Data`、`@RequiredArgsConstructor` 等代码生成 |
+| Jackson | 2.x | JSON 序列化/反序列化 |
+| Spring Security | 3.2.5 | 仅使用 `PasswordEncoder`（BCrypt），禁用过滤器链 |
+
+### 目录结构
+
+```
+springboot-backend/src/main/java/com/netconfig/
+├── NetConfigApplication.java       # 主入口（@SpringBootApplication + @EnableScheduling）
+├── config/                         # 配置层（9 个文件）
+│   ├── AuthInterceptor.java        # Token 鉴权拦截器（角色 + CSRF）
+│   ├── CorsConfig.java             # CORS 跨域配置
+│   ├── DatabaseInitializer.java    # 启动初始化（建表、默认账号、数据迁移）
+│   ├── GlobalExceptionHandler.java # 全局异常处理
+│   ├── ProjectRootConfig.java      # 项目根路径解析
+│   ├── RateLimitingFilter.java     # 登录限流过滤器（5 次/5 分钟/IP）
+│   ├── SecurityConfig.java         # BCrypt PasswordEncoder bean
+│   ├── SpaForwardController.java   # SPA 路由转发
+│   └── WebConfig.java              # Web MVC 配置（拦截器注册、静态资源）
+├── controller/                     # 控制器（14 个文件）
+│   ├── AuthController.java         # 认证接口（登录/注册/用户管理）
+│   ├── CommandController.java      # 网络命令 CRUD
+│   ├── DesktopController.java      # 桌面运维 CRUD
+│   ├── FaultController.java        # 故障排查 CRUD
+│   ├── LinuxController.java        # Linux CRUD
+│   ├── OfficeController.java       # Office CRUD
+│   ├── AiTopicController.java      # AI 主题 CRUD
+│   ├── LearningNoteController.java # 学习笔记/评论（含点赞、回复）
+│   ├── FileUploadController.java   # 文件上传
+│   ├── ClickController.java        # 点击统计（记录、统计、TOP10）
+│   ├── CategoryController.java     # 分类标签管理
+│   ├── SearchHistoryController.java# 搜索历史管理
+│   ├── PendingChangeController.java# 审核变更流程
+│   └── UserProfileController.java  # 用户资料管理
+├── dto/                            # 数据传输对象（7 个文件）
+│   ├── ApiResponse.java            # 通用响应包装 {ok, data, error}
+│   ├── CommandDTO.java             # 命令主题 DTO（含 ConfigItem 嵌套类）
+│   ├── DesktopDTO.java             # 桌面运维 DTO
+│   ├── FaultDTO.java               # 故障排查 DTO
+│   ├── LinuxDTO.java               # Linux DTO（含 config/configs 双字段兼容）
+│   ├── OfficeDTO.java              # Office DTO
+│   └── AiTopicDTO.java             # AI 主题 DTO
+├── entity/                         # JPA 实体（17 个文件）
+│   ├── User.java                   # 用户表
+│   ├── UserToken.java              # 登录 Token 表
+│   ├── UserProfile.java            # 用户资料表
+│   ├── CommandTopic.java           # 命令主题表
+│   ├── CommandConfig.java          # 厂商配置表
+│   ├── Fault.java                  # 故障表
+│   ├── Desktop.java                # 桌面运维表
+│   ├── Linux.java                  # Linux 表
+│   ├── Office.java                 # Office 表
+│   ├── AiTopic.java                # AI 主题表
+│   ├── LearningNote.java           # 学习笔记表（评论）
+│   ├── NoteReaction.java           # 笔记点赞/点踩记录
+│   ├── ClickRecord.java            # 点击统计表
+│   ├── SearchHistory.java          # 搜索历史表
+│   ├── PendingChange.java          # 待审核变更表
+│   ├── CategoryLabel.java          # 分类标签表
+│   └── CategoryExclusion.java      # 分类排除表
+├── repository/                     # 数据仓库（17 个文件）
+│   └── (每个 Entity 对应一个 Repository，继承 JpaRepository)
+└── service/                        # 服务层（11 个文件）
+    ├── AuthService.java            # 认证逻辑（注册/登录/Token 管理）
+    ├── CommandService.java         # 命令主题业务（级联操作）
+    ├── DesktopService.java         # 桌面运维业务
+    ├── FaultService.java           # 故障排查业务
+    ├── LinuxService.java           # Linux 业务
+    ├── OfficeService.java          # Office 业务
+    ├── AiTopicService.java         # AI 主题业务
+    ├── LearningNoteService.java    # 笔记业务（点赞/回复/CRUD）
+    ├── NoteModerationService.java  # 笔记内容审核（违禁词、正则、长度）
+    ├── UserProfileService.java     # 用户资料业务
+    └── JsonUtil.java               # JSON 工具 + 时间工具
+```
+
+### 安全机制
+
+| 机制 | 实现 | 说明 |
+|------|------|------|
+| **Token 认证** | `AuthInterceptor` + `UserToken` 表 | 登录生成 64 位 hex token，请求需带 `Authorization: Bearer <token>` 头 |
+| **CSRF 防护** | `AuthInterceptor` | 写操作需携带 `X-Requested-With: XMLHttpRequest` 头 |
+| **登录限流** | `RateLimitingFilter` | 每 IP 每 5 分钟最多 5 次登录失败 |
+| **密码加密** | BCrypt（`SecurityConfig`） | 兼容旧版 SHA-256，登录时自动迁移 |
+| **密码过期** | Token 7 天过期 | `UserToken.expiresAt` 字段 |
+| **内容审核** | `NoteModerationService` | 评论内容过滤 60+ 违禁词、URL、手机号、邮箱 |
+| **文件验证** | `FileUploadController` | 扩展名白名单 + MIME 类型校验 |
+| **权限校验** | `AuthInterceptor` | 三级角色矩阵控制 |
+
+### 权限矩阵
+
+| 操作 | 游客 | ADMIN（普通管理员） | SUPER_ADMIN（超级管理员） |
+|------|------|------|------|
+| 浏览所有页面 | ✅ | ✅ | ✅ |
+| 发表评论 | ✅ | ✅ | ✅ |
+| 新增/修改/删除内容 | ❌ | 需审核 | ✅（直接写入） |
+| 管理用户 | ❌ | ❌ | ✅ |
+| 审核变更 | ❌ | ❌ | ✅ |
+| 文件上传 | ❌ | ✅ | ✅ |
 
 ---
 
-## ❓ 常见问题
+## API 文档
 
-### Q1: 启动后端报 `mvn: command not found`
+### 认证
 
-A: Maven 未安装或未配置到 PATH。
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/auth/register` | 用户注册 |
+| GET | `/api/auth/check-username` | 检查用户名是否可用 |
+| POST | `/api/auth/login` | 登录 |
+| POST | `/api/auth/logout` | 登出 |
+| GET | `/api/auth/me` | 获取当前登录用户信息 |
+| GET | `/api/auth/users` | 获取所有用户（SUPER_ADMIN） |
+| POST | `/api/auth/approve/{userId}` | 审批用户（SUPER_ADMIN） |
+| DELETE | `/api/auth/users/{userId}` | 删除用户（SUPER_ADMIN） |
+
+### 业务 CRUD
+
+每个业务模块（`topics`, `faults`, `desktop`, `linux`, `office`, `ai`）具有相同模式的 RESTful API：
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/{module}` | 列表查询 |
+| GET | `/api/{module}/{id}` | 单条详情 |
+| POST | `/api/{module}` | 新增 |
+| PUT | `/api/{module}/{id}` | 更新 |
+| DELETE | `/api/{module}/{id}` | 删除 |
+| POST | `/api/{module}/batch-delete` | 批量删除 |
+
+### 其他 API
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET/POST/PUT/DELETE | `/api/learning-notes/**` | 学习笔记/评论 CRUD + 点赞/点踩 |
+| POST | `/api/upload` | 文件上传 |
+| POST/GET | `/api/clicks/record`, `/api/clicks/stats` | 点击记录与统计 |
+| GET | `/api/clicks/top10`, `/api/clicks/top10/{module}` | 点击 TOP10 排行 |
+| GET/POST/DELETE | `/api/categories/**` | 分类标签管理 |
+| GET/POST/DELETE | `/api/search-history/**` | 搜索历史管理 |
+| POST | `/api/admin/pending-change` | 提交待审核变更（ADMIN） |
+| GET | `/api/admin/pending-changes` | 获取待审核列表（SUPER_ADMIN） |
+| POST | `/api/admin/pending-change/{id}/approve` | 批准变更（SUPER_ADMIN） |
+| POST | `/api/admin/pending-change/{id}/reject` | 拒绝变更（SUPER_ADMIN） |
+| GET/POST | `/api/profile/**` | 用户个人资料 |
+
+---
+
+## 数据库
+
+### 表结构（共 16 张表）
+
+| 表名 | 实体 | 说明 |
+|------|------|------|
+| `users` | `User` | 用户账号（id, username, password, role, status, createdAt） |
+| `user_tokens` | `UserToken` | 登录 Token（token, userId, role, expiresAt） |
+| `user_profiles` | `UserProfile` | 用户资料（id, userId, realName, email, avatar, bio） |
+| `command_topics` | `CommandTopic` | 网络命令主题（id, title, cat, desc, detail, topo, files） |
+| `command_configs` | `CommandConfig` | 厂商配置（id, topicId, vendor, config, comment, doc, verificationCmd, verificationImages） |
+| `faults` | `Fault` | 故障排查条目 |
+| `desktop` | `Desktop` | 桌面运维条目 |
+| `linux` | `Linux` | Linux 条目 |
+| `office` | `Office` | Office 条目 |
+| `ai_topics` | `AiTopic` | AI 主题条目 |
+| `learning_notes` | `LearningNote` | 学习笔记/评论（id, targetId, username, content, likeCount, dislikeCount, parentId, createdAt） |
+| `note_reactions` | `NoteReaction` | 笔记点赞/点踩记录（noteId, userId, reactionType） |
+| `click_records` | `ClickRecord` | 点击统计（module, itemId, itemTitle, count） |
+| `search_history` | `SearchHistory` | 搜索历史（module, keyword, searchedAt） |
+| `pending_changes` | `PendingChange` | 待审核变更（module, operation, entityId, payload, submitter, status） |
+| `category_labels` | `CategoryLabel` | 分类标签（catKey, catLabel） |
+| `category_exclusions` | `CategoryExclusion` | 分类排除（catKey） |
+
+### 数据库特点
+
+- **类型：** SQLite（嵌入式，无需安装数据库服务）
+- **位置：** 项目根目录 `date.db`
+- **DDL 策略：** Hibernate `ddl-auto=update` + `DatabaseInitializer` 启动时自动补全
+- **日志模式：** WAL（Write-Ahead Logging），提升并发性能
+
+---
+
+## 权限体系
+
+### 角色分级
+
+| 角色 | 级别 | 说明 |
+|------|------|------|
+| `SUPER_ADMIN` | 3（最高） | 系统管理员，拥有全部权限，可直接写入数据 |
+| `ADMIN` | 2 | 普通管理员，可提交变更但需要超级管理员审核 |
+| `USER` | 1 | 预留普通用户角色（当前未使用） |
+| 游客 | 0 | 未登录用户，仅可浏览 |
+
+### 审核工作流
+
+普通管理员（ADMIN）不能直接修改数据，流程如下：
+
+```
+ADMIN 提交变更 → PendingChange（status=PENDING）
+                       ↓
+            SUPER_ADMIN 审查变更
+                       ↓
+              ┌────────┴────────┐
+              ▼                 ▼
+        批准（APPROVED）    拒绝（REJECTED）
+              ▼
+        执行实际数据库操作
+```
+
+- **支持的操作：** CREATE、UPDATE、DELETE
+- **支持的模块：** cmd, fault, desktop, linux, office, ai
+- **审核界面：** `/super-admin` 页面提供变更对比视图（原始值 vs 新值）
+
+---
+
+## 操作指南
+
+### 基本操作
+
+**内容管理：** 登录后进入各模块管理页面（`/{module}/admin`），可新增、编辑、删除条目。
+
+**分类管理：**
+- 添加/编辑条目时，分类使用 `ComboBox` 组件，支持直接输入新分类（自动保存）
+- 管理页面支持对已存在的分类进行编辑或删除
+- 超级管理员可在 `/super-admin` 配置分类排除
+
+**评论系统：** 每个知识条目底部有评论区，支持：
+- 发表评论和回复
+- 点赞/点踩
+- 最热/最新排序
+- 内容经过关键词和 URL 过滤审核
+
+**文件上传：** `/api/upload` 接口支持 100MB 以下的多格式文件上传，允许类型包括：png、jpg、gif、pdf、doc、docx、xls、xlsx、zip 等 25+ 种格式。
+
+**PDF 导出：** 详情页支持一键导出排版美观的 A4 PDF 文档，保留图片和代码高亮。
+
+**搜索：** 每个模块列表页支持关键词搜索 + 厂商/分类多维筛选，搜索记录按模块独立保存。
+
+**同类别内容面板：** 详情页侧边浮动面板，自动展示同分类的条目。支持：
+- 可拖拽切换靠左/靠右/收起
+- 面板收起后，右侧保留展开按钮
+- 响应式：窗口宽度 < 1200px 时自动隐藏
+
+### 默认管理员账号
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| admin | admin123 | SUPER_ADMIN |
+
+> 生产环境请立即修改默认密码。
+
+---
+
+## 技术细节
+
+### 前端组件通信模式
+
+```
+Props 向下传递 + Events 向上冒泡
+  父组件 ──props──→ 子组件
+  子组件 ──emit──→ 父组件
+
+全局状态：
+  stores/auth.js          → 认证状态（Token/用户名/角色）
+  composables/useSidebarCollapse.js → 侧边栏状态（折叠/位置，localStorage 持久化）
+  utils/userLibrary.js    → 浏览历史与收藏（localStorage 持久化，跨组件事件通知）
+```
+
+### 后端关键设计
+
+**级联删除：** 命令模块删除主题时，自动级联删除关联的厂商配置、学习笔记、点击记录。其他模块删除时同步清理点击记录。
+
+**密码迁移：** 支持旧版 SHA-256 密码到 BCrypt 的无缝迁移。用户登录时若检测到旧版密码，自动计算哈希并迁移。
+
+**Token 管理：** 不使用 JWT，采用随机 64 位 hex 字符串作为 Token，存储于 `user_tokens` 表，7 天过期。登出时直接从数据库删除。
+
+**评论审核：** `NoteModerationService` 对评论内容进行三层过滤：违禁关键词（60+）、正则模式（URL、手机号、邮箱）、长度限制（2000 字）。
+
+**SPA 路由转发：** `SpaForwardController` 将非 API 路径的前端路由转发到 `index.html`，后端支持直接托管前端构建产物。
+
+### 数据校验
+
+- **前端：** `required` 属性、`@NotBlank` 校验、`ComboBox` 必填检查
+- **后端：** `@Valid @RequestBody` + `@NotBlank @Size(max=200)` 注解校验
+- **审核：** `PendingChange` 中存储完整 JSON 负载，批准时校验格式
+
+### 启动时自动操作（DatabaseInitializer）
+
+1. 创建 17 张表（`CREATE TABLE IF NOT EXISTS`）
+2. 初始化超级管理员账号（密码 BCrypt 加密）
+3. 清理废弃表（`commands`, `meta`）
+4. 补充缺失列（如 `images`, `videos`, `dislike_count`）
+5. 修复空值和日期格式
+6. 设置 PRAGMA（WAL 模式、外键约束）
+
+---
+
+## 开发指南
+
+### 项目约定
+
+- **前端：** Vue 3 Composition API + `<script setup>`，Tailwind CSS 原子类 + 自定义全局样式
+- **后端：** Spring Boot 3 + Lombok + JPA，控制器层轻薄，业务逻辑在 Service 层
+- **数据库迁移：** 不单独管理迁移文件，依赖 `ddl-auto=update` + `DatabaseInitializer` 启动时自动执行
+- **命名规范：** API 路径使用小写/复数/kebab-case；数据库表使用 snake_case；Java 类使用 PascalCase；Vue 文件使用 PascalCase
+
+### 新增模块步骤
+
+1. **后端：** 创建 Entity → Repository → Service → DTO → Controller → 在 `AuthInterceptor` 添加新模块的权限规则 → 在 `DatabaseInitializer` 添加建表语句
+2. **前端：** 创建 5 个页面（List/Detail/Admin/Add/Edit）→ 在 `api/modules.js` 添加 API 端点 → 在 `router/index.js` 添加路由 → 在 `Sidebar.vue` 添加菜单项
+3. **其他：** 在 `ClickController` 的 `MODULES` 数组添加模块名 → 在主页 `HomePage.vue` 添加模块卡片
+
+### 构建命令
 
 ```powershell
-# 验证 Maven
-mvn -v
+# 前端构建
+cd vue-frontend
+npm run build     # 输出到 dist/
 
-# 如果未安装，下载 Maven 3.9+ 并将 bin 目录加入系统 PATH
-# 或在 IntelliJ IDEA 中直接运行 SpringBootApplication
-```
-
-### Q2: 启动后端报 `java: command not found`
-
-A: JDK 未安装或未配置到 PATH。
-
-```powershell
-# 验证 Java
-java -version
-
-# 需要 JDK 17+，推荐 Eclipse Temurin 或 Oracle JDK
-# 安装后设置 JAVA_HOME 和 PATH：
-# JAVA_HOME=C:\jdk17\jdk-17.0.19+10
-# PATH=%JAVA_HOME%\bin;...
-```
-
-### Q3: 端口 8080 已被占用
-
-A: 编辑 `springboot-backend/src/main/resources/application.properties`：
-
-```properties
-server.port=9090
-```
-
-同时修改 `vue-frontend/vite.config.js` 中的代理目标。
-
-### Q4: 前端请求跨域错误
-
-A: 开发环境已通过 Vite 代理处理。如仍有跨域问题，检查 `vite.config.js`：
-
-```js
-server: {
-  port: 3000,
-  proxy: {
-    '/api': { target: 'http://localhost:8080', changeOrigin: true },
-    '/uploads': { target: 'http://localhost:8080', changeOrigin: true }
-  }
-}
-```
-
-### Q5: 数据库锁定 / 损坏
-
-A: 删除 `date.db*` 三个文件（保留前先备份），重启后端会自动重建。
-
-### Q6: 文件上传失败
-
-A: 检查 `application.properties` 中的上传大小限制：
-
-```properties
-spring.servlet.multipart.max-file-size=100MB
-spring.servlet.multipart.max-request-size=100MB
-```
-
-### Q7: 修改默认管理员密码
-
-A: 当前版本无内置修改密码 UI。可直接操作数据库：
-
-```sql
--- 密码已用 BCrypt 加密，建议通过代码生成
-UPDATE users SET password = '<bcrypt-hash>' WHERE username = 'admin';
+# 后端构建
+cd springboot-backend
+mvn clean package -DskipTests   # 生成 target/netconfig-backend-1.0.0.jar
 ```
 
 ---
 
-## 📦 部署建议
+## 部署
 
-### 简易部署（单机）
+### 生产部署（单机）
 
-```
-1. 后端：mvn package 后用 java -jar 运行
-2. 前端：npm run build 后将 dist/ 部署到 Nginx
-3. Nginx 配置 /api/* 反代到 localhost:8080
-4. Nginx 配置 /uploads/* 反代到 localhost:8080
+```powershell
+# 运行后端
+java -jar springboot-backend/target/netconfig-backend-1.0.0.jar
+
+# 前端 dist/ 部署到 Nginx
 ```
 
 ### Nginx 配置示例
@@ -809,56 +691,38 @@ server {
 }
 ```
 
-### Docker 化（待实现）
+### 健康检查
 
-可参考 `Dockerfile` + `docker-compose.yml` 将前后端及 SQLite 持久化卷打包。
+```powershell
+# 检查后端
+Invoke-WebRequest -Uri http://localhost:8080/api/auth/me
 
----
-
-## 🔧 开发提示
-
-### 添加新模块
-
-1. **后端**：
-   - 创建 `Entity`（如 `NewModule.java`）
-   - 创建 `Repository`（如 `NewModuleRepository.java`）
-   - 创建 `DTO`（如 `NewModuleDTO.java`）
-   - 创建 `Service`（如 `NewModuleService.java`）
-   - 创建 `Controller`（如 `NewModuleController.java`，路由 `/api/newmodule`）
-   - 在 `PendingChangeController.executeChange/doCreate/doUpdate/doDelete` 添加分支
-   - 在 `DatabaseInitializer.run` 添加建表 SQL
-
-2. **前端**：
-   - 在 `vue-frontend/src/api/modules.js` 添加 `apiNewModule`
-   - 创建 5 个页面：`NewModuleList / NewModuleDetail / NewModuleAdmin / NewModuleAdd / NewModuleEdit`
-   - 在 `router/index.js` 添加路由
-   - 在 `Sidebar.vue` 添加菜单项
-   - 在 `HomePage.vue` 添加入口卡片
-
-### 修改主题色
-
-编辑 `vue-frontend/src/assets/main.css`，修改 CSS 变量：
-
-```css
-:root {
-  --primary: #2563eb;
-  --orange: #ea580c;
-  /* ... */
-}
+# 检查前端
+Invoke-WebRequest -Uri http://localhost:3000
 ```
 
 ---
 
-## 📝 License
+## 项目统计
+
+| 维度 | 数据 |
+|------|------|
+| 后端 Java 源码文件 | 51 个 |
+| 前端 Vue/JS 源码文件 | 58 个 |
+| 数据库表 | 17 张 |
+| 前端共享组件 | 13 个 |
+| 页面组件 | 30 个 |
+| RESTful API 端点 | 50+ 个 |
+| 路由 | 31 条 |
+
+---
+
+## 许可证
 
 Private & Internal Use Only.
 
 ---
 
-## 🤝 贡献
+## 最后更新
 
-内部项目，如需贡献请联系项目负责人。
-
----
-
-**最后更新**：2026
+2026-06-13

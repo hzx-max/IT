@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -13,9 +13,7 @@
 
         <div class="form-group">
           <label>发行版 <span class="text-red-600">*</span></label>
-          <select v-model="form.vendor" class="form-input">
-              <option v-for="(v,k) in LINUX_VENDOR_MAP" :key="k" :value="k">{{ v.n }}</option>
-            </select>
+          <DropdownSelect v-model="form.vendor" :options="distroOptions" placeholder="选择发行版" />
         </div>
 
         <div class="form-group">
@@ -65,7 +63,7 @@
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '保存' }}
           </button>
-          <button class="btn btn-ghost" @click="$router.back()">取消</button>
+          <button class="btn btn-primary" @click="$router.back()">取消</button>
         </div>
 
         <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">{{ error }}</div>
@@ -83,6 +81,7 @@ import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
+import DropdownSelect from '../../components/DropdownSelect.vue'
 import { apiLinux, LINUX_VENDOR_MAP, LINUX_CAT_MAP, apiCategories, apiUpload } from '../../api/index.js'
 import { submitWithApproval } from '../../api/approval.js'
 
@@ -92,6 +91,7 @@ const error = ref('')
 const success = ref('')
 
 const form = ref({ title: '', vendor: 'centos', cat: '', desc: '', detail: '', config: '' })
+const distroOptions = computed(() => Object.entries(LINUX_VENDOR_MAP).map(([k, v]) => ({ value: k, label: v.n })))
 
 const localCatMap = ref({ ...LINUX_CAT_MAP })
 const catOptions = computed(() => Object.entries(localCatMap.value).map(([k, v]) => ({ value: k, label: v })))
@@ -218,7 +218,7 @@ onMounted(async () => {
 .form-group label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:15px;outline:none;font-family:inherit;background:var(--bg-white);transition:var(--transition-normal)}
 .form-input:hover{border-color:#cbd5e1}
-.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,64,175,.12)}
 .form-input.font-mono{font-family:'Cascadia Code','Fira Code',Consolas,monospace;line-height:1.6}
 .upload-area{border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8}
 .upload-area:hover{border-color:#2563eb;color:#2563eb;background:#f8fafc}

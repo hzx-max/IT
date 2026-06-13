@@ -1,6 +1,8 @@
 package com.netconfig.config;
 
+import com.netconfig.entity.User;
 import com.netconfig.entity.UserToken;
+import com.netconfig.repository.UserRepository;
 import com.netconfig.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -34,6 +37,35 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 写操作需要管理员权限
+        boolean isWriteOperation = "POST".equalsIgnoreCase(method)
+                || "PUT".equalsIgnoreCase(method)
+                || "DELETE".equalsIgnoreCase(method);
+
+        // 学习笔记接口 - GET公开，POST允许游客，PUT/DELETE需登录，点赞/踩/回复公开
+        if (path.startsWith("/api/learning-notes")) {
+            if ("GET".equalsIgnoreCase(method)) {
+                trySetUserInfo(request);
+                return true;
+            }
+            if ("PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)) {
+                return checkAuthForAllUsers(request, response);
+            }
+            // 点赞、踩、回复 - 公开，尝试获取用户信息
+            if (path.contains("/like") || path.contains("/dislike") || path.contains("/reply")) {
+                trySetUserInfo(request);
+                return true;
+            }
+            // POST：尝试获取用户信息，游客也能发笔记
+            trySetUserInfo(request);
+            return true;
+        }
+
+        // 个人资料接口 - 需要登录但允许所有角色
+        if (path.startsWith("/api/profile")) {
+            return checkAuthForAllUsers(request, response);
+        }
+
         // ADMIN提交待审核变更的接口（需要auth但不需要SUPER_ADMIN）
         if (path.startsWith("/api/admin/pending-change") && "POST".equalsIgnoreCase(method)) {
             return checkAuthWithoutSuperAdmin(request, response);
@@ -43,11 +75,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.startsWith("/api/admin/pending-changes") || path.startsWith("/api/admin/pending-change/")) {
             return checkSuperAdminOnly(request, response);
         }
-
-        // 写操作需要管理员权限
-        boolean isWriteOperation = "POST".equalsIgnoreCase(method)
-                || "PUT".equalsIgnoreCase(method)
-                || "DELETE".equalsIgnoreCase(method);
 
         // 读操作对所有人放行（包括/admin路由）
         // admin页面在前端由路由守卫控制，普通用户看不到管理页面链接
@@ -98,6 +125,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         // 存储用户信息到request
         request.setAttribute("userId", token.getUserId());
         request.setAttribute("userRole", token.getRole());
+        User user = userRepository.findById(token.getUserId()).orElse(null);
+        if (user != null) {
+            request.setAttribute("username", user.getUsername());
+        }
         return true;
     }
 
@@ -125,7 +156,55 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         request.setAttribute("userId", token.getUserId());
         request.setAttribute("userRole", token.getRole());
+        User userA = userRepository.findById(token.getUserId()).orElse(null);
+        if (userA != null) {
+            request.setAttribute("username", userA.getUsername());
+        }
         return true;
+    }
+
+    // 所有已登录用户可访问（学习笔记等）
+    private boolean checkAuthForAllUsers(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String auth = request.getHeader("Authorization");
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            response.setStatus(401);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":401,\"msg\":\"请先登录\"}");
+            return false;
+        }
+        UserToken token = authService.validateToken(auth.substring(7));
+        if (token == null) {
+            response.setStatus(401);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":401,\"msg\":\"登录已过期，请重新登录\"}");
+            return false;
+        }
+        request.setAttribute("userId", token.getUserId());
+        request.setAttribute("userRole", token.getRole());
+        // 查找用户名
+        User user = userRepository.findById(token.getUserId()).orElse(null);
+        if (user != null) {
+            request.setAttribute("username", user.getUsername());
+        }
+        return true;
+    }
+
+    // 尝试获取用户信息（游客也能发笔记）
+    private void trySetUserInfo(HttpServletRequest request) {
+        String auth = request.getHeader("Authorization");
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            return;
+        }
+        UserToken token = authService.validateToken(auth.substring(7));
+        if (token == null) {
+            return;
+        }
+        request.setAttribute("userId", token.getUserId());
+        request.setAttribute("userRole", token.getRole());
+        User user = userRepository.findById(token.getUserId()).orElse(null);
+        if (user != null) {
+            request.setAttribute("username", user.getUsername());
+        }
     }
 
     // 仅SUPER_ADMIN可访问

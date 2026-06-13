@@ -1,13 +1,17 @@
 <template>
   <MainLayout>
-    <div class="max-w-[960px] mx-auto export-pdf-area">
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[28px] font-bold">{{ item?.title || '加载中...' }}</h2>
-        <div class="flex gap-2.5 flex-wrap items-center">
-          <button class="btn btn-primary text-sm" @click="$router.push('/cmd/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
-          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
-          <button class="btn btn-ghost text-sm" @click="$router.back()">← 返回</button>
+    <div class="detail-layout">
+    <div class="export-pdf-area pb-4">
+      <div class="detail-actions">
+        <button class="detail-action-btn" @click="$router.push('/cmd')">← 返回</button>
+        <div class="flex gap-2.5">
+          <FavoriteButton module="cmd" :item="item" show-text v-if="item?.id" />
+          <button class="detail-action-btn" @click="$router.push('/cmd/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="detail-action-btn" @click="exportPDF">导出PDF</button>
         </div>
+      </div>
+      <div class="detail-section detail-title-section">
+        <h2 class="detail-title">{{ item?.title || '加载中...' }}</h2>
       </div>
 
       <template v-if="loading">
@@ -85,14 +89,7 @@
           </div>
         </div>
 
-        <div class="detail-section">
-          <div class="detail-label mb-2">学习笔记</div>
-          <textarea v-model="noteContent" class="w-full px-3.5 py-[11px] border border-slate-200 rounded-md text-sm outline-none font-inherit resize-y transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(37,99,235,.12)]" rows="4" placeholder="在此记录你的学习笔记..."></textarea>
-          <div class="mt-2 flex gap-2 items-center justify-end">
-            <span class="text-sm text-slate-500">{{ noteStatus }}</span>
-            <button class="btn btn-primary text-xs !py-1.5 !px-4" @click="saveNote">保存笔记</button>
-          </div>
-        </div>
+        <LearningNotes :targetId="$route.params.id" />
 
         <div class="detail-footer">
           <span v-if="item?.createdAt" class="tag-time">{{ formatTime(item.createdAt) }}</span>
@@ -101,24 +98,27 @@
         </div>
       </template>
     </div>
+    <RelatedPanel :api-list="apiTopics.list" :current-id="route.params.id" :current-cat="item?.cat" base-path="/cmd" />
+    </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
-import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiTopics, apiNotes } from '../../api/index.js'
+import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiTopics } from '../../api/index.js'
+import LearningNotes from '../../components/LearningNotes.vue'
+import RelatedPanel from '../../components/RelatedPanel.vue'
+import FavoriteButton from '../../components/FavoriteButton.vue'
 import { exportPdf } from '../../utils/pdfExport.js'
+import { recordView } from '../../utils/userLibrary.js'
 
 const route = useRoute()
 const item = ref(null)
 const loading = ref(true)
 const error = ref('')
 const activeConfig = ref(0)
-const noteContent = ref('')
-const noteStatus = ref('')
-
 const extColors = {
   pdf: { bg: '#fef2f2', color: '#ef4444' },
   doc: { bg: '#eff6ff', color: '#3b82f6' }, docx: { bg: '#eff6ff', color: '#3b82f6' },
@@ -211,31 +211,21 @@ async function exportPDF() {
   }, item.value?.title || '网络命令')
 }
 
-async function loadNote() {
+async function loadDetail(id) {
+  loading.value = true; error.value = ''
   try {
-    const res = await apiNotes.get(route.params.id)
-    if (res.data?.content) { noteContent.value = res.data.content; noteStatus.value = '上次保存: ' + new Date().toLocaleString() }
-  } catch {}
-}
-
-async function saveNote() {
-  try {
-    await apiNotes.save(route.params.id, noteContent.value)
-    noteStatus.value = '已保存 ' + new Date().toLocaleString()
-  } catch { alert('保存失败') }
-}
-
-onMounted(async () => {
-  try {
-    const res = await apiTopics.get(route.params.id)
+    const res = await apiTopics.get(id)
     item.value = res.data
+    recordView('cmd', item.value)
+    activeConfig.value = 0
     if (item.value) {
       document.title = item.value.title + ' - IT运维学习平台'
-      loadNote()
     }
   } catch (e) { error.value = '加载失败: ' + e.message }
   finally { loading.value = false }
-})
+}
+watch(() => route.params.id, (id) => { if (id) loadDetail(id) })
+onMounted(() => { loadDetail(route.params.id) })
 </script>
 
 <style scoped>
@@ -250,14 +240,6 @@ onMounted(async () => {
 .tag-cat{font-size:14px;padding:4px 12px;border-radius:12px;font-weight:500;background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa;display:inline-block}
 .vendor-tab{padding:8px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-white);color:var(--text-muted);font-size:15px;cursor:pointer;font-weight:500;transition:var(--transition-normal)}
 .vendor-tab:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;transition:all .25s ease}
-.btn-primary{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
-.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
-.btn-pdf{background:#2563eb;color:#fff;border:1.5px solid #2563eb}
-.btn-pdf:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
-.btn-pdf:disabled{opacity:.6;cursor:not-allowed}
-.btn-ghost{background:var(--bg-white);border:1.5px solid var(--border);color:var(--text-muted);text-decoration:none}
-.btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);transform:translateX(-2px)}
 /* 附件列表 */
 .file-list{display:flex;flex-direction:column;gap:8px}
 .file-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;transition:all .2s}
@@ -274,4 +256,5 @@ onMounted(async () => {
 .image-item:hover{border-color:#93c5fd;box-shadow:0 4px 12px rgba(37,99,235,.12)}
 .image-thumb{width:100%;height:140px;object-fit:cover;display:block}
 .image-name{font-size:12px;color:#64748b;padding:6px 8px;text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 </style>

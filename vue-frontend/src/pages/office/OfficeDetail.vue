@@ -1,13 +1,17 @@
 <template>
   <MainLayout>
-    <div class="max-w-[960px] mx-auto export-pdf-area">
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[28px] font-bold">{{ item?.title || '加载中...' }}</h2>
-        <div class="flex gap-2.5 flex-wrap items-center">
-          <button class="btn btn-primary text-sm" @click="$router.push('/office/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
-          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
-          <button class="btn btn-ghost text-sm" @click="$router.back()">← 返回</button>
+    <div class="detail-layout">
+    <div class="export-pdf-area pl-8 pb-4">
+      <div class="detail-actions">
+        <button class="detail-action-btn" @click="$router.push('/office')">← 返回</button>
+        <div class="flex gap-2.5">
+          <FavoriteButton module="office" :item="item" show-text v-if="item?.id" />
+          <button class="detail-action-btn" @click="$router.push('/office/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="detail-action-btn" @click="exportPDF">导出PDF</button>
         </div>
+      </div>
+      <div class="detail-section detail-title-section">
+        <h2 class="detail-title">{{ item?.title || '加载中...' }}</h2>
       </div>
 
       <div v-if="item?.cat" class="detail-section"><div class="detail-label">分类</div><div class="detail-value">{{ getCatLabel(item.cat, OFFICE_CAT_MAP) }}</div></div>
@@ -56,14 +60,7 @@
           <div v-else class="detail-value text-slate-400">暂无附件</div>
         </div>
 
-        <div class="detail-section">
-          <div class="detail-label mb-2">学习笔记</div>
-          <textarea v-model="noteContent" class="w-full px-3.5 py-[11px] border border-slate-200 rounded-md text-sm outline-none font-inherit resize-y transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(37,99,235,.12)]" rows="4" placeholder="在此记录你的学习笔记..."></textarea>
-          <div class="mt-2 flex gap-2 items-center justify-end">
-            <span class="text-sm text-slate-500">{{ noteStatus }}</span>
-            <button class="btn btn-primary text-xs !py-1.5 !px-4" @click="saveNote">保存笔记</button>
-          </div>
-        </div>
+        <LearningNotes :targetId="$route.params.id" />
 
         <div class="detail-footer">
           <span class="tag-time">{{ formatTime(item.createdAt) }}</span>
@@ -72,23 +69,26 @@
         </div>
       </template>
     </div>
+    <RelatedPanel :api-list="apiOffice.list" :current-id="route.params.id" :current-cat="item?.cat" base-path="/office" />
+    </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
-import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiOffice, apiNotes } from '../../api/index.js'
+import { OFFICE_VENDOR_MAP, OFFICE_CAT_MAP, getVendorName, getVendorColor, getCatLabel, formatTime, apiOffice } from '../../api/index.js'
+import LearningNotes from '../../components/LearningNotes.vue'
+import RelatedPanel from '../../components/RelatedPanel.vue'
+import FavoriteButton from '../../components/FavoriteButton.vue'
 import { exportPdf } from '../../utils/pdfExport.js'
+import { recordView } from '../../utils/userLibrary.js'
 
 const route = useRoute()
 const item = ref(null)
 const loading = ref(true)
 const error = ref('')
-const noteContent = ref('')
-const noteStatus = ref('')
-
 function openViewer(url) {
   window.open(url, '_blank')
 }
@@ -122,31 +122,20 @@ async function exportPDF() {
   }, item.value?.title || 'Office运维')
 }
 
-async function loadNote() {
+async function loadDetail(id) {
+  loading.value = true; error.value = ''
   try {
-    const res = await apiNotes.get(route.params.id)
-    if (res.data?.content) { noteContent.value = res.data.content; noteStatus.value = '上次保存: ' + new Date().toLocaleString() }
-  } catch {}
-}
-
-async function saveNote() {
-  try {
-    await apiNotes.save(route.params.id, noteContent.value)
-    noteStatus.value = '已保存 ' + new Date().toLocaleString()
-  } catch { alert('保存失败') }
-}
-
-onMounted(async () => {
-  try {
-    const res = await apiOffice.get(route.params.id)
+    const res = await apiOffice.get(id)
     item.value = res.data
+    recordView('office', item.value)
     if (item.value) {
       document.title = item.value.title + ' - IT运维学习平台'
-      loadNote()
     }
   } catch (e) { error.value = '加载失败: ' + e.message }
   finally { loading.value = false }
-})
+}
+watch(() => route.params.id, (id) => { if (id) loadDetail(id) })
+onMounted(() => { loadDetail(route.params.id) })
 </script>
 
 <style scoped>
@@ -182,4 +171,5 @@ onMounted(async () => {
 .file-meta{font-size:12px;color:#94a3b8;margin-top:2px}
 .file-download-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0}
 .file-download-btn:hover{background:#1d4ed8}
+
 </style>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -57,9 +57,7 @@
           <div class="form-group">
             <label>厂商 <span class="text-red-600">*</span></label>
             <div class="vendor-row">
-              <select v-model="vendorForm.vendor" class="form-input vendor-select" @change="onVendorChange">
-                <option v-for="(v,k) in VENDOR_MAP" :key="k" :value="k">{{ v.n }}</option>
-              </select>
+              <DropdownSelect v-model="vendorForm.vendor" :options="vendorOptions" placeholder="选择厂商" @change="onVendorChange" />
               <button class="btn btn-primary btn-add-vendor" @click="addVendorConfig" :disabled="!vendorForm.vendor || !vendorForm.config">
                 {{ vendorExists ? '更新' : '添加' }}
               </button>
@@ -140,7 +138,7 @@
               <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
                 {{ submitting ? '提交中...' : '更新' }}
               </button>
-              <button class="btn btn-ghost" @click="$router.back()">取消</button>
+              <button class="btn btn-primary" @click="$router.back()">取消</button>
             </div>
             <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">{{ error }}</div>
             <div v-if="successMsg" class="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-600 text-sm">{{ successMsg }}</div>
@@ -159,6 +157,7 @@ import MainLayout from '../../layouts/MainLayout.vue'
 import ComboBox from '../../components/ComboBox.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
 import FileUploader from '../../components/FileUploader.vue'
+import DropdownSelect from '../../components/DropdownSelect.vue'
 import { VENDOR_MAP, CAT_MAP, getVendorName, getVendorColor, apiTopics } from '../../api/index.js'
 import { submitWithApproval } from '../../api/approval.js'
 
@@ -175,6 +174,7 @@ const modal = ref({ visible: false, message: '', type: 'confirm' })
 
 const vendorConfigs = ref([])
 const vendorForm = ref({ vendor: 'huawei', config: '', comment: '', verificationCmd: '', doc: '' })
+const vendorOptions = computed(() => Object.entries(VENDOR_MAP).map(([k, v]) => ({ value: k, label: v.n })))
 const topoFiles = ref([])
 const verifyFiles = ref([])
 const files = ref([])
@@ -330,7 +330,7 @@ async function onSubmit() {
 .form-group label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:15px;outline:none;font-family:inherit;background:var(--bg-white);transition:var(--transition-normal)}
 .form-input:hover{border-color:#cbd5e1}
-.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,64,175,.12)}
 .form-input.font-mono{font-family:'Cascadia Code','Fira Code',Consolas,monospace;line-height:1.6}
 .form-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:20px;padding-top:20px;border-top:1.5px solid var(--border)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;transition:all .25s ease;border:none}
@@ -341,7 +341,7 @@ async function onSubmit() {
 .btn-ghost{background:var(--bg-white);color:var(--text);border:1.5px solid var(--border)}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
 .vendor-row{display:flex;gap:10px;align-items:stretch}
-.vendor-select{flex:1}
+
 .btn-add-vendor{padding:10px 20px;font-size:14px;white-space:nowrap;flex-shrink:0}
 .vendor-config-item{padding:14px;border:1.5px solid #e2e8f0;border-radius:8px;margin-bottom:10px;transition:border-color .2s}
 .vendor-config-item:hover{border-color:#cbd5e1}

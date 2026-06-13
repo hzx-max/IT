@@ -1,0 +1,466 @@
+======== 2026-06-11 11:01:27 ========
+操作人：AI（opencode）
+修改内容：
+- 重建 learning_notes 表结构：删除 role 字段，新增 like_count 字段
+- 破坏性操作：删除了 date.db 文件（而非只删表），导致所有业务数据丢失
+- 重写 LearningNotes.vue 为评论样式组件（头像/排序/点赞/相对时间）
+- 删除废弃的 Hermes Skills 模块（6 个 Vue 组件 + 7 个 Java 文件）
+- 删除废弃的旧 Note 模块（NoteController/Service/Repository/Entity）
+- 修复 CommandService 中残留的 NoteRepository 引用
+- 从 DatabaseInitializer 移除旧的 notes 表创建语句
+影响范围：
+- 所有内容数据丢失（topics、faults、linux、office、desktop、ai 等）
+- 学习笔记模块升级为新评论系统，使用 learning_notes 表
+- Hermes Skills 模块彻底移除
+- 旧注释系统退役（notes → learning_notes）
+
+======== 2026-06-11 11:20:00 ========
+操作人：AI（opencode）
+修改内容：
+- 新增 AGENTS.md 备份规则（数据库备份 date.db.bak、项目全量备份、修改记录文件）
+- 创建本文件（修改记录.txt）
+- 执行首次项目全量备份
+影响范围：
+- AGENTS.md 工作流规则
+- 无业务影响
+
+======== 2026-06-11 11:28:00 ========
+操作人：AI（opencode）
+修改内容：
+- 将全量备份移入项目内 backup\ 目录
+- AGENTS.md 备份路径更新为 backup\ 子目录
+影响范围：
+- 无业务影响
+
+======== 2026-06-11 11:35:00 ========
+操作人：AI（opencode）
+修改内容：
+- 重写 README.md，同步最新模块状态
+  - 移除已删除的 Note 模块引用，更新为 LearningNotes 评论系统
+  - 移除已删除的 Hermes Skills 模块
+  - 按用户要求结构组织：项目概述、技术栈、快速开始、部署与使用
+  - 补充 Docker 配置示例、基本操作说明
+影响范围：
+- 文档更新，无业务影响
+
+======== 2026-06-11 11:40:00 ========
+操作人：AI（opencode）
+修改内容：
+- 调整 README.md 结构：基本操作移至最前，删除未实现的 Docker 部分
+影响范围：
+- 文档更新，无业务影响
+
+======== 2026-06-11 11:45:00 ========
+操作人：AI（opencode）
+修改内容：
+- 恢复历史数据：用用户提供的旧备份 date.db 替换当前空数据库
+  - 数据源：D:\桌面\压缩包\IT运维学习平台_备份_20260605_013740\date.db
+  - 先停止后端再替换，Hibernate 自动补建 learning_notes 新表
+  - 当前空库已备份为 date.db.bak
+影响范围：
+- 所有业务数据恢复：topics 47 / faults 114 / linux 99 / office 101 / desktop 109 / ai 58
+- learning_notes 表为新表（旧数据无此表），评论内容为空
+
+======== 2026-06-11 11:50:00 ========
+操作人：AI（opencode）
+修改内容：
+- 修复 LearningNotes.vue 评论组件
+  - 排序按钮（最热/最新）增加悬停效果和激活状态背景色，提升交互反馈
+  - 移除未实现的踩（👎）按钮和回复按钮，避免用户误操作
+影响范围：
+- 所有使用 LearningNotes 组件的详情页面
+
+======== 2026-06-11 12:05:00 ========
+操作人：AI（opencode）
+修改内容：
+- 实现评论踩和回复功能
+  - 后端：新增 NoteReaction 实体和 note_reactions 表，记录用户赞/踩状态
+  - 后端：LearningNote 添加 dislike_count 和 parent_id 字段
+  - 后端：新增 /dislike 和 /reply 接口
+  - 后端：AuthInterceptor 支持 GET 请求传递 userId
+  - 前端：apiNotes 添加 dislike 和 reply 方法
+  - 前端：LearningNotes.vue 实现踩按钮和回复输入框
+  - 每个用户对每条评论只能选择赞或踩，且只能操作一次
+  - 踩和赞可以互相切换（如从赞改为踩）
+影响范围：
+- 所有使用 LearningNotes 组件的详情页面
+- 新增 note_reactions 数据库表
+
+======== 2026-06-11 12:50:00 ========
+操作人：AI（opencode）
+修改内容：
+- 彻底修复学习笔记评论组件所有功能
+  - AuthInterceptor：点赞/踩/回复接口对公开访问，游客可直接使用
+  - LearningNoteController：游客点赞/踩时使用 IP 地址作为唯一标识
+  - LearningNotes.vue：使用 updateNoteInList 确保 Vue 响应式更新，移除游客登录提示
+  - 所有功能已验证：最热/最新排序、赞、踩、回复、嵌套显示均正常工作
+影响范围：
+- 所有使用 LearningNotes 组件的详情页面，游客和登录用户均可使用全部功能
+
+======== 2026-06-11 13:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- 新增管理员个人页面功能
+  - 后端：新建 UserProfile 实体和 user_profiles 表（关联 users 表）
+  - 后端：新建 UserProfileRepository / Service / Controller
+  - 后端：AuthInterceptor 放行 /api/profile 接口（需登录）
+  - 后端：DatabaseInitializer 添加 user_profiles 建表语句
+  - 前端：新建 ProfilePage.vue 含头像/姓名/部门/职位/邮箱/手机/简介编辑
+  - 前端：路由添加 /profile 页面
+  - 前端：侧边栏底部添加「个人中心」入口
+  - 前端：apiProfile 模块（get/update）
+影响范围：
+- 新增 user_profiles 表，通过 user_id 与 users 表一对一关联
+- 所有登录用户可编辑个人信息
+
+======== 2026-06-11 13:50:00 ========
+操作人：AI（opencode）
+修改内容：
+- 精简个人页面：移除手机号、部门、职位、头像链接字段
+  - 后端：UserProfile 实体删除 phone/department/position 字段
+  - 后端：UserProfileService/Controller 同步精简
+  - 前端：ProfilePage.vue 移除对应表单项
+- 头像改为图片上传
+  - 前端：头像区域显示用户头像图片，无图时显示首字母
+  - 前端：鼠标悬浮头像显示半透明遮罩+相机图标+「更换头像」文字
+  - 前端：点击触发文件选择，上传到 /api/upload，自动保存头像路径
+ - 影响范围：
+   - user_profiles 表结构精简（SQLite 为新建表，无需迁移）
+
+======== 2026-06-11 14:20:00 ========
+操作人：AI（opencode）
+修改内容：
+- 全局背景改为浅蓝橙渐变毛玻璃效果
+  - main.css：body 背景改为 linear-gradient(135deg, #dbeafe, #e0e7ff, #fed7aa, #ffedd5)，fixed 定位
+  - Sidebar.vue：侧边栏改为半透明（opacity 0.88）+ backdrop-filter: blur(20px)
+  - ProfilePage.vue：移除重复的 profile-bg 背景层（现在全局统一）
+影响范围：
+- 所有页面背景统一为浅蓝橙渐变毛玻璃效果
+
+======== 2026-06-11 14:25:00 ========
+操作人：AI（opencode）
+修改内容：
+- 全局背景恢复为白色（#f8fafc）
+  - main.css：body 背景改回 var(--bg)（#f8fafc）
+  - Sidebar.vue：侧边栏恢复为不透明渐变
+影响范围：
+- 所有页面背景统一为白色
+
+======== 2026-06-11 15:30:00 ========
+操作人：AI（opencode）
+修改内容：
+- 侧边栏整体加黑色线框（border: 1px solid #000）
+- 一级菜单（nav-dd-toggle）及二级菜单（nav-btn）选中/悬停后底色改为蓝色（#bfdbfe）
+- 二级菜单 padding-left 从 42px/34px 统一为 30px，文字与一级标题对齐（图标 20px + gap 10px）
+- SearchBar.vue 全部颜色改为黑白（边框 #d1d5db、聚焦 #000、按钮 #000）
+- DropdownSelect.vue 全部颜色改为黑白（边框 #d1d5db、聚焦 #000、选中 #000）
+- MainLayout.vue 汉堡条改为 #000，遮罩层 rgba(0,0,0,.4)
+- main.css 导航覆盖样式全部改为黑白（移除 #dbeafe/#93c5fd/#1d4ed8/#2563eb）
+影响范围：
+- 侧边栏、搜索栏、下拉选择器样式全部黑白配色
+- 菜单选中态为蓝色底（#bfdbfe）
+
+======== 2026-06-11 15:45:00 ========
+操作人：AI（opencode）
+修改内容：
+- 一级菜单（nav-dd-toggle）及二级菜单（nav-btn）选中/悬停底色改为蓝色
+  - 悬停态：浅蓝 #bfdbfe，黑字
+  - 选中态：深蓝 #2563eb，白字，小倒角 border-radius:6px
+- 选中二级标题后，一级标题底色恢复白色（不再跟随变蓝）
+  - NavDropdown.vue：新增 hasActiveChild 计算属性，一级标题 active 类仅在展开且无子项选中时生效
+  - main.css：移除 .nav-dd-toggle.active 的 !important 覆盖，由组件逻辑控制
+- 二级菜单 padding-left 从 42px/34px 统一为 30px，文字与一级标题对齐
+- 侧边栏、搜索栏、下拉选择器全部黑白配色（上一轮完成）
+影响范围：
+- 侧边栏导航菜单交互样式
+
+======== 2026-06-11 16:00:00 ========
+操作人：AI（opencode）
+修改内容：
+- 一级标题（nav-dd-toggle）去除底色，始终为白色，悬停仅轻微灰 #f5f5f5
+- 二级菜单（nav-btn）悬浮和选中统一为深蓝 #2563eb + 白字 + 小倒角
+- 侧边栏所有线框改为浅灰 #e5e7eb 极细 0.5px（边框、折叠按钮、展开按钮、kbd）
+- 删除二级菜单左侧黑线（nav-dd-menu border-left 从 4px solid #000 改为 3px solid transparent）
+- 一级/二级菜单分隔线改为 0.5px #f0f0f0 极细线
+- 修复蓝色背景溢出侧边栏边界（nav-dropdown overflow:hidden）
+影响范围：
+- 侧边栏导航菜单样式
+
+======== 2026-06-11 16:10:00 ========
+操作人：AI（opencode）
+修改内容：
+- 一级和二级菜单栏不沾满容器宽度，左右留白一致
+  - nav-dd-toggle：width:auto + margin:0 8px + padding:13px 14px
+  - nav-btn：width:auto + margin:0 8px + padding:11px 14px
+  - nav-dd-menu：padding:0 8px（子菜单容器也留白）
+  - main.css 同步覆盖为相同左右留白
+影响范围：
+- 侧边栏导航菜单布局
+
+======== 2026-06-11 16:20:00 ========
+操作人：AI（opencode）
+修改内容：
+- 侧边栏所有字体统一改为微软雅黑（Microsoft YaHei）
+  - Sidebar.vue：.sidebar 添加 font-family，brand/shortcuts/profile 统一
+  - NavDropdown.vue：一级标题、二级菜单统一 font-family + font-weight:500
+  - main.css：覆盖样式同步 font-family + font-weight:500
+- 统一粗细：所有菜单项 font-weight:500（之前混合了 600/700/800）
+影响范围：
+- 侧边栏所有文字样式
+
+======== 2026-06-11 19:18:00 ========
+操作人：AI（opencode）
+修改内容：
+- 修复超级管理员无法删除其他成员评论的bug
+  - 根因：后端 JAR 构建时间（13:47）早于 LearningNoteController 修改时间（15:41），运行的是旧版本代码
+  - 旧版 GET /api/learning-notes 不返回 canDelete/canEdit 字段
+  - 旧版 DELETE 不传递 role 给 LearningNoteService.deleteById()，导致 SUPER_ADMIN 权限检查失败
+  - 解决：停止后端 → mvn clean package -DskipTests → 重启 JAR
+  - 验证：GET 响应现在包含 canDelete/canEdit 字段，SUPER_ADMIN 可删除任意用户笔记，普通 ADMIN 只能删除自己的
+影响范围：
+- 学习笔记删除功能恢复正常
+- SUPER_ADMIN 可删除任意用户评论
+- 普通用户/ADMIN 只能删除自己的评论
+
+======== 2026-06-11 19:25:00 ========
+操作人：AI（opencode）
+修改内容：
+- 修复管理页面批量操作栏自适应布局问题
+  - 所有 Admin 页面（Fault/Ai/Desktop/Office/Linux/Cmd）：
+    - 批量操作栏改为 fixed bottom-0 全宽定位，用 px-[100px] 自适应内容区宽度
+    - 选中项时动态添加 table-wrap paddingBottom:64px，为提示栏腾出空间
+    - 移除固定 padding-bottom，改用条件样式按需撑开
+  - MainLayout.vue：还原原始布局（移除不必要的 flex 容器）
+影响范围：
+- 6 个管理页面的批量操作栏布局
+- MainLayout 布局结构
+
+======== 2026-06-11 19:40:00 ========
+操作人：AI（opencode）
+修改内容：
+- 重写登录注册页切换动画
+  - AuthPage.vue：移除复杂的 auth-cover/auth-reveal 缩放动画（scaleX）
+  - 改用 translateX 平移蓝色滑块，文字跟随滑块自然移动
+  - 表单内容改用 form-visible/form-hidden 类控制淡入淡出（opacity + translateY）
+  - form-visible 增加 0.5s transition-delay，在滑块动画结束后加载内容
+  - 简化 JavaScript 逻辑，移除定时器和动画状态管理
+- 修复管理页面批量操作栏覆盖问题
+  - 移除 table-wrap 动态 paddingBottom，改为直接悬浮覆盖
+影响范围：
+- 登录/注册页面切换动画
+- 6 个管理页面批量操作栏布局
+
+======== 2026-06-11 19:50:00 ========
+操作人：AI（opencode）
+修改内容：
+- 重设计首页 TOP10 排行榜前三名图标样式
+  - 第1名：金色渐变（#ffd700 → #f0a500）+ 金色光晕
+  - 第2名：银色渐变（#e8e8e8 → #b8b8b8）+ 银色光晕
+  - 第3名：铜色渐变（#cd7f32 → #a0522d）+ 铜色光晕
+  - 图标改为圆形（border-radius:50%），尺寸 24px，加 box-shadow 立体感
+影响范围：
+- 首页 6 个模块的 TOP10 排行榜显示
+
+======== 2026-06-11 20:10:00 ========
+操作人：AI（opencode）
+修改内容：
+- 实现侧边栏拖拽移动功能
+  - Sidebar.vue：新增拖拽手柄（品牌栏下方灰色横条），mousedown/mousemove/mouseup 事件处理
+  - 向右拖拽 >120px 吸附到右侧，向左拖拽 >120px 收起侧边栏
+  - 反向同理：右侧向左拖拽 >120px 吸附到左侧，向右拖拽 >120px 收起
+  - 拖拽时添加阴影和高 z-index 视觉反馈，松手后过渡动画归位
+  - 位置和折叠状态持久化到 localStorage
+  - 展开按钮根据位置自动切换左右两侧
+  - 移动端禁用拖拽
+- 更新 useSidebarCollapse composable，新增 useSidebarPosition/setSidebarPosition
+- 更新 MainLayout.vue，根据 sidebarPos 动态设置 marginLeft/marginRight
+影响范围：
+- 侧边栏位置和布局
+- 所有使用 MainLayout 的页面
+
+======== 2026-06-12 23:45:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 拖拽条移至品牌栏下方，指示器居顶中央位置
+- Sidebar.vue: 展开按钮箭头跟随 position 动态切换，左侧显示右箭头，右侧显示左箭头
+- Sidebar.vue: 拖拽条样式微调，高度 8px→14px，指示器宽度 32px→24px
+影响范围：侧边栏 UI/交互
+
+======== 2026-06-12 23:50:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 上移去掉底部横线，加 margin-top:4px 间距
+- Sidebar.vue: 展开按钮箭头逻辑调整，左侧显示箭头 <，右侧显示右箭头 >
+影响范围：侧边栏 UI/交互
+
+======== 2026-06-12 23:55:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 修正展开按钮箭头方向，左侧显示 > 右箭头，右侧显示 < 左箭头，指向展开方向
+影响范围：侧边栏 UI
+
+======== 2026-06-12 23:58:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 展开按钮箭头固定为 > 右箭头，不再根据 position 变化
+- Sidebar.vue: 收起按钮固定为 < 左箭头，位置不变
+影响范围：侧边栏 UI
+
+======== 2026-06-13 00:02:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 展开按钮箭头改为 < 左箭头，底色改为深蓝色 #2563eb + 白字 + hover #1d4ed8
+影响范围：侧边栏 UI
+
+======== 2026-06-13 00:08:00 ========
+操作人：AI（opencode）
+修改内容：
+- Sidebar.vue: 收起按钮箭头自适应，左侧 < 左箭头，指向收起方向；底色为深蓝 #2563eb 白字
+- Sidebar.vue: 展开按钮箭头自适应，右侧 > 右箭头，指向展开方向；底色跟随位置不变
+影响范围：侧边栏 UI
+
+======== 2026-06-13 00:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- main.css: 新增 .btn-back 底色深蓝 #2563eb 白字，hover #1d4ed8
+- ProfilePage.vue: .btn-back 改为深蓝底色白字
+- CmdDetail.vue / FaultDetail.vue / DesktopDetail.vue / AiDetail.vue / OfficeDetail.vue / LinuxDetail.vue: 返回按钮改为 .btn-back 样式
+- SuperAdminPage.vue: 返回首页按钮添加 .btn-back 样式
+影响范围：所有页面返回按钮样式
+
+======== 2026-06-13 00:25:00 ========
+操作人：AI（opencode）
+修改内容：
+- main.css: 新增 .modal-btn-cancel 底色深蓝
+- 12个 Add/Edit/Admin 页面: 取消按钮改为 .btn-back 样式
+- LearningNotes.vue: reply-cancel-btn 改为深蓝底色白字
+- ComboBox.vue: combo-edit-cancel 改为深蓝底色白字
+- SuperAdminPage.vue: 退出按钮 + 返回首页按钮添加 .btn-back 样式
+- HomePage.vue: 退出登录按钮添加 .btn-back 样式
+- Sidebar.vue: 品牌栏底色改为深蓝 #2563eb，文字白色
+- AuthPage.vue: 品牌栏底色改为深蓝 #2563eb，文字白色
+- MainLayout.vue: 移动端标题底色改为深蓝，圆角
+- SuperAdminPage.vue: 品牌栏底色改为深蓝 #2563eb，文字白色
+影响范围：所有页面取消/退出/品牌栏样式
+
+======== 2026-06-13 01:00:00 ========
+操作人：AI（opencode）
+修改内容：
+- CmdDetail/FaultDetail/DesktopDetail/AiDetail/OfficeDetail/LinuxDetail: 返回键移至标题容器上方独立行，靠左放置，不占全宽（grid布局）
+- main.css: 详情页标题容器改为grid布局，返回键占一整行靠左，标题+按钮在第二行
+- MainLayout.vue: page-layout-wide 留白改为20%，左右各10%
+- .btn-back 样式补充 border-radius:8px 和 border
+影响范围：详情页布局、列表/管理页留白
+
+======== 2026-06-13 01:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- main.css: .btn-back 改为白底#fff 黑框 #1e293b 黑字 #1e293b，hover 浅蓝底
+- main.css: 新增 .btn-solid 底色深蓝 #2563eb 白字，用于取消/退出按钮
+- 12个 Add/Edit 页面 & 6个 Admin 页面: 取消按钮 class .btn-back 改 .btn-solid
+- HomePage.vue: 退出登录 .btn-back 改 .btn-solid
+- SuperAdminPage.vue: 退出/返回首页 .btn-back 改 .btn-solid
+- ProfilePage.vue: 本地 .btn-back 样式同步为白底黑框
+- main.css: modal-btn-cancel 样式补充 border 和 border-radius
+影响范围：全局取消/退出/返回按钮样式
+
+======== 2026-06-13 02:00:00 ========
+操作人：AI（opencode）
+修改内容：
+- MainLayout.vue: 进入详情页route.name 以 -detail 结尾时自动收起侧边栏
+- 新增 src/components/RelatedPanel.vue: 同类别内容面板，标题+描述，固定定位1400px以上显示，小于1200px隐藏
+- 6个详情页Cmd/Fault/Desktop/Ai/Office/Linux：集成 RelatedPanel，数据对应 api.list 函数和 basePath
+影响范围：详情页和同类别内容面板
+
+======== 2026-06-13 02:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- 修复 PowerShell 批量替换导致的编码损坏（18个文件），确保 UTF-8 格式正确替换
+- 构建验证通过（177 modules transformed）
+影响范围：编码修复
+
+======== 2026-06-13 21:10:00 ========
+操作人：AI（opencode）
+修改内容：
+- MainLayout.vue: 新增 isDetailPage computed，详情页不渲染侧边栏，主内容区无 margin
+- MainLayout.vue: 新增 page-layout-detail 样式，左右留白5%，宽度90%
+- 6个详情页统一套入 .detail-layout flex 容器（Cmd/Fault/Desktop/Ai/Office/Linux）
+  - .detail-layout > .export-pdf-area(flex:7) + RelatedPanel(flex:3) = 7:3 布局
+- RelatedPanel.vue: watch currentCat 触发 load，确保分类变化时刷新同类别内容
+- 构建验证通过（177 modules）
+ 影响范围：详情页布局（隐藏侧边栏、全宽、7:3内容面板）
+
+======== 2026-06-13 21:45:00 ========
+操作人：AI（opencode）
+修改内容：
+- 详情页标题移到描述上方，返回/编辑/导出PDF统一为深蓝 .detail-action-btn 样式
+  - main.css: 新增 .detail-header/.detail-actions/.detail-action-btn 样式
+  - main.css: 删除旧 grid 头布局 CSS（.export-pdf-area > .flex.justify-between...）
+  - 6个详情页（Cmd/Fault/Desktop/Ai/Office/Linux）: 标题独立一行，三个按钮同行
+  - 清理 CmdDetail/DesktopDetail 中未使用的 .btn/.btn-primary/.btn-pdf/.btn-ghost 样式
+- RelatedPanel.vue: 线框改为全边框加 border-radius:12px 倒角
+- RelatedPanel.vue: max-height:70vh + position:sticky，内容超出可滚动
+- main.css: .detail-layout align-items:flex-start → stretch，同类别面板与详情内容等高
+ 影响范围：详情页布局、同类别面板样式
+
+======== 2026-06-13 22:00:00 ========
+操作人：AI（opencode）
+修改内容：
+- 详情页操作栏：返回靠左、编辑+导出PDF靠右（detail-actions justify-content:space-between）
+- 标题（h2.detail-title）移入 export-pdf-area 内容容器内，位于操作栏与第一个内容段之间
+- 所有按钮保留线框（border:1.5px）和倒角（border-radius:8px）
+- 6个详情页同步更新结构
+- main.css: 移除 .detail-header 包装层，.detail-title 独立；.detail-actions 改为 space-between
+影响范围：6个详情页头部布局
+
+======== 2026-06-13 22:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- detail-actions 容器添加 border:1.5px solid #e2e8f0 + border-radius:12px + padding:12px 20px + background:#fff
+- 标题移入 .detail-section 容器内，与内容段样式一致（自带线框+倒角）
+- .detail-title 去掉底部 margin（由外层 section 控制间距）
+- 6个详情页同步更新：标题由裸 h2 改为 .detail-section > h2 结构
+ 影响范围：6个详情页头部布局样式
+
+======== 2026-06-13 23:00:00 ========
+操作人：AI（opencode）
+修改内容：
+- 重写 RelatedPanel.vue，集成三个功能：
+  1. 点击跳转：使用 useRouter().push() 导航至对应详情页
+  2. 可收纳+可拖拽调整宽度：折叠按钮（localStorage 持久化），左侧拖拽手柄调整宽度 200~500px
+  3. 内容一行折叠：.related-desc 添加 -webkit-line-clamp:1，超50字符显示"展开全文"/"收起"按钮
+影响范围：所有详情页的同类别内容面板
+
+======== 2026-06-13 23:30:00 ========
+操作人：AI（opencode）
+修改内容：
+- RelatedPanel.vue：
+  1. 移除"展开全文"/"收起"按钮和 showFull/toggleFull 逻辑，改为始终单行裁剪
+  2. 修复 collapsed 未定义导致的渲染错误（添加 computed: collapsed）
+  3. 拖拽手柄从 5px 改为 12px，添加竖线视觉指示
+  4. 面板高度从 max-height:70vh 改为 height:70vh
+- CmdDetail.vue：移除 export-pdf-area 上的 pl-8（32px 左内边距），防止按钮/标题截断
+- 所有6个详情页（Cmd/Office/Linux/Fault/Desktop/Ai）：
+  提取 loadDetail(id) 函数 + 添加 watch(() => route.params.id) 监听
+
+======== 2026-06-13 00:15:00 ========
+操作人：AI（opencode）
+修改内容：
+- 统一所有下拉框样式为图一（DropdownSelect）风格
+- ComboBox.vue：重写 CSS 匹配 DropdownSelect 样式（圆角10px、padding:6px、选项圆角8px）
+- 替换所有原生 <select> 为 DropdownSelect 组件（13个文件）：
+  - CmdAdd/CmdEdit：厂商选择
+  - DesktopEdit：分类选择
+  - LinuxAdd/LinuxEdit：发行版选择
+  - OfficeAdd/OfficeEdit：厂商选择
+  - 6个 Admin 页：操作列（查看/编辑/删除）
+- 删除所有 .action-select、.vendor-select 旧 CSS
+影响范围：所有表单下拉框、管理页操作列样式统一
+  修复跳转同路由不同参数时内容不刷新的问题
+影响范围：所有详情页的布局渲染、同类别内容面板、路由跳转刷新
+
+
+======== 2026-06-13 15:30:00 ========
+�����ˣ�AI��opencode��
+�޸����ݣ���12��Add/Editҳ���ȡ����ť��ʽ��btn-ghost��Ϊbtn-primary��ʹ���뱣�水ť������ͬ����ɫ�������
+Ӱ�췶Χ��CmdAdd/CmdEdit, DesktopAdd/DesktopEdit, FaultAdd/FaultEdit, LinuxAdd/LinuxEdit, OfficeAdd/OfficeEdit, AiAdd/AiEdit����12��ҳ���ȡ����ť�Ӿ���ʽ��

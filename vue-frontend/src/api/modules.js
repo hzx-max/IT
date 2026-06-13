@@ -73,8 +73,13 @@ export const apiAi = {
 }
 
 export const apiNotes = {
-  get: (id) => http.get(`/notes/${id}`),
-  save: (id, content) => http.put(`/notes/${id}`, { content })
+  list: (targetId) => http.get('/learning-notes', { params: { targetId } }),
+  create: (targetId, content) => http.post('/learning-notes', { targetId, content }),
+  update: (id, content) => http.put(`/learning-notes/${id}`, { content }),
+  remove: (id) => http.delete(`/learning-notes/${id}`),
+  like: (id) => http.post(`/learning-notes/${id}/like`),
+  dislike: (id) => http.post(`/learning-notes/${id}/dislike`),
+  reply: (id, targetId, content) => http.post(`/learning-notes/${id}/reply`, { targetId, content })
 }
 
 export const apiCategories = {
@@ -101,6 +106,11 @@ export const apiUpload = {
       headers: { 'Content-Type': undefined }
     })
   }
+}
+
+export const apiProfile = {
+  get: () => http.get('/profile'),
+  update: (data) => http.post('/profile/update', data)
 }
 
 export const apiClicks = {

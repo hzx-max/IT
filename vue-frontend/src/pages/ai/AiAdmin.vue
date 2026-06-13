@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MainLayout>
     <div class="top-bar">
       <h2>管理AI运维</h2>
@@ -9,7 +9,7 @@
       module="ai-admin"
       v-model:catValue="catFilter" :catMap="aiCatMap" />
 
-    <div class="table-wrap mt-[18px]" style="padding-bottom:120px">
+    <div class="table-wrap mt-[18px]" :class="{'has-batch-bar': selected.length > 0}">
       <table class="w-full border-collapse text-sm table-fixed">
         <colgroup>
           <col style="width:3%"><col style="width:5%"><col style="width:35%"><col style="width:14%"><col style="width:18%"><col style="width:25%">
@@ -35,22 +35,17 @@
             <td class="px-2 py-3 text-center text-slate-600">{{ item.category }}</td>
             <td class="px-4 py-3 text-center text-slate-500 text-xs">{{ formatTime(item.createdAt) }}</td>
             <td class="px-4 py-3 text-center">
-              <select @change="handleAction($event, item.id)" class="action-select">
-                <option value="">操作</option>
-                <option value="view">查看</option>
-                <option value="edit">编辑</option>
-                <option value="delete">删除</option>
-              </select>
+              <DropdownSelect :options="actionOptions" @change="handleAction($event, item.id)" placeholder="操作" compact />
             </td>
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <div v-if="selected.length > 0" class="fixed bottom-0 left-[240px] right-0 z-[1000] flex items-center gap-3.5 px-5 py-3.5 bg-purple-50 border-t border-purple-200 text-sm font-medium text-purple-600 animate-fadeUp">
-      <span class="flex-1">已选择 {{ selected.length }} 项</span>
-      <button class="btn btn-ghost-sm" @click="clearSelection">取消</button>
-      <button class="btn btn-danger btn-sm" @click="batchDelete">删除</button>
+      <!-- 批量操作栏 -->
+      <div v-if="selected.length > 0" class="batch-action-bar">
+        <span class="flex-1">已选择 {{ selected.length }} 项</span>
+        <button class="btn btn-ghost-sm" @click="clearSelection">取消</button>
+        <button class="btn btn-danger btn-sm" @click="batchDelete">删除</button>
+      </div>
     </div>
 
     <ModalDialog :visible="modal.visible" :message="modal.message" :type="modal.type"
@@ -64,6 +59,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import SearchBar from '../../components/SearchBar.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import DropdownSelect from '../../components/DropdownSelect.vue'
 import { apiAi, formatTime } from '../../api/index.js'
 import { submitWithApproval } from '../../api/approval.js'
 
@@ -72,6 +68,11 @@ const search = ref('')
 const catFilter = ref('')
 const items = ref([])
 const selected = ref([])
+const actionOptions = [
+  { value: 'view', label: '查看' },
+  { value: 'edit', label: '编辑' },
+  { value: 'delete', label: '删除', danger: true }
+]
 
 const aiCatMap = computed(() => {
   const map = {}
@@ -96,9 +97,7 @@ function onModalConfirm() {
 }
 function onModalCancel() { modal.value.visible = false }
 
-function handleAction(e, id) {
-  const action = e.target.value
-  e.target.value = ''
+function handleAction(action, id) {
   if (action === 'view') router.push('/ai/detail/' + id)
   else if (action === 'edit') router.push('/ai/edit/' + id)
   else if (action === 'delete') {
@@ -161,9 +160,6 @@ onMounted(loadData)
 .top-bar h2::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px}
 .table-wrap{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:visible}
 .sticky-th{position:sticky;top:0;z-index:10;background:#f8fafc;box-shadow:0 1px 0 #e2e8f0}
-.action-select{padding:6px 30px 6px 12px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;background:var(--bg-white);color:var(--text);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:var(--transition-fast)}
-.action-select:hover{border-color:#7c3aed}
-.action-select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
 .btn{display:inline-flex;align-items:center;gap:6px;border-radius:6px;cursor:pointer;font-weight:500;transition:all .25s ease}
 .btn-danger{background:#dc2626;color:#fff;border:1.5px solid #dc2626;box-shadow:0 1px 3px rgba(220,38,38,.3)}
 .btn-danger:hover{background:#b91c1c;border-color:#b91c1c;box-shadow:0 4px 14px rgba(220,38,38,.35);transform:translateY(-1px)}

@@ -6,7 +6,7 @@ import com.netconfig.entity.CommandTopic;
 import com.netconfig.repository.ClickRecordRepository;
 import com.netconfig.repository.CommandConfigRepository;
 import com.netconfig.repository.CommandTopicRepository;
-import com.netconfig.repository.NoteRepository;
+import com.netconfig.repository.LearningNoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class CommandService {
 
     private final CommandTopicRepository topicRepository;
     private final CommandConfigRepository configRepository;
-    private final NoteRepository noteRepository;
+    private final LearningNoteRepository learningNoteRepository;
     private final ClickRecordRepository clickRecordRepository;
 
     public List<CommandDTO> findAll() {
@@ -77,7 +77,7 @@ public class CommandService {
 
     @Transactional
     public void delete(String id) {
-        noteRepository.deleteById(id);
+        learningNoteRepository.deleteByTargetId(id);
         configRepository.deleteByTopicId(id);
         topicRepository.deleteById(id);
         clickRecordRepository.deleteByModuleAndItemId("cmd", id);
@@ -85,7 +85,9 @@ public class CommandService {
 
     @Transactional
     public void batchDelete(List<String> ids) {
-        noteRepository.deleteAllById(ids);
+        for (String id : ids) {
+            learningNoteRepository.deleteByTargetId(id);
+        }
         configRepository.deleteByTopicIdIn(ids);
         topicRepository.deleteAllById(ids);
         for (String id : ids) {

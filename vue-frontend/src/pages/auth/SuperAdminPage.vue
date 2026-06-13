@@ -14,8 +14,8 @@
         </router-link>
         <div class="super-topbar-right">
           <span class="super-user-tag">{{ username }}</span>
-          <button class="super-btn-ghost" @click="onLogout">退出</button>
-          <router-link to="/" class="super-btn-ghost">返回首页</router-link>
+          <button class="super-btn-ghost btn-solid" @click="onLogout">退出</button>
+          <router-link to="/" class="super-btn-ghost btn-solid">返回首页</router-link>
         </div>
       </div>
 
@@ -676,8 +676,8 @@ onMounted(async () => {
 
 /* 顶栏 */
 .super-topbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1.5px solid #e2e8f0}
-.super-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#2563eb}
-.super-brand span{font-size:17px;font-weight:700;color:#0f172a}
+.super-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;background:#2563eb;padding:6px 14px;border-radius:8px}
+.super-brand span{font-size:17px;font-weight:700;color:#fff}
 .super-topbar-right{display:flex;align-items:center;gap:12px}
 .super-user-tag{font-size:13px;color:#64748b;padding:4px 10px;background:#f1f5f9;border-radius:6px}
 .super-btn-ghost{padding:6px 14px;border:1.5px solid #e2e8f0;border-radius:6px;background:transparent;color:#475569;font-size:13px;cursor:pointer;text-decoration:none;transition:all .2s}

@@ -4,8 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../pages/HomePage.vue'
 
 // 认证模块
-import LoginPage from '../pages/auth/LoginPage.vue'
-import RegisterPage from '../pages/auth/RegisterPage.vue'
+import AuthPage from '../pages/auth/AuthPage.vue'
 import SuperAdminPage from '../pages/auth/SuperAdminPage.vue'
 
 // 网络命令模块
@@ -43,6 +42,9 @@ import OfficeAdmin from '../pages/office/OfficeAdmin.vue'
 import OfficeAdd from '../pages/office/OfficeAdd.vue'
 import OfficeEdit from '../pages/office/OfficeEdit.vue'
 
+// 个人页面
+import ProfilePage from '../pages/auth/ProfilePage.vue'
+
 // AI运维模块
 import AiList from '../pages/ai/AiList.vue'
 import AiDetail from '../pages/ai/AiDetail.vue'
@@ -53,8 +55,8 @@ import AiEdit from '../pages/ai/AiEdit.vue'
 const routes = [
   { path: '/', name: 'home', component: HomePage },
   // 认证
-  { path: '/login', name: 'login', component: LoginPage },
-  { path: '/register', name: 'register', component: RegisterPage },
+  { path: '/login', name: 'login', component: AuthPage },
+  { path: '/register', name: 'register', component: AuthPage },
   { path: '/super-admin', name: 'super-admin', component: SuperAdminPage, meta: { requiresAuth: true, requiresSuperAdmin: true } },
   // 网络命令
   { path: '/cmd', name: 'cmd-list', component: CmdList },
@@ -86,6 +88,8 @@ const routes = [
   { path: '/office/admin', name: 'office-admin', component: OfficeAdmin, meta: { requiresAuth: true } },
   { path: '/office/add', name: 'office-add', component: OfficeAdd, meta: { requiresAuth: true } },
   { path: '/office/edit/:id', name: 'office-edit', component: OfficeEdit, meta: { requiresAuth: true } },
+  // 个人页面
+  { path: '/profile', name: 'profile', component: ProfilePage, meta: { requiresAuth: true } },
   // AI运维
   { path: '/ai', name: 'ai-list', component: AiList },
   { path: '/ai/detail/:id', name: 'ai-detail', component: AiDetail },

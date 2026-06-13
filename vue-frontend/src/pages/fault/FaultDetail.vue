@@ -1,13 +1,17 @@
 <template>
   <MainLayout>
-    <div class="max-w-[960px] mx-auto export-pdf-area">
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 class="text-[28px] font-bold">{{ item?.title || '加载中...' }}</h2>
-        <div class="flex gap-2.5 flex-wrap items-center">
-          <button class="btn btn-primary text-sm" @click="$router.push('/fault/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
-          <button class="btn btn-pdf text-sm" @click="exportPDF">导出PDF</button>
-          <button class="btn btn-ghost text-sm" @click="$router.back()">&larr; 返回</button>
+    <div class="detail-layout">
+    <div class="export-pdf-area pl-8 pb-4">
+      <div class="detail-actions">
+        <button class="detail-action-btn" @click="$router.push('/fault')">← 返回</button>
+        <div class="flex gap-2.5">
+          <FavoriteButton module="fault" :item="item" show-text v-if="item?.id" />
+          <button class="detail-action-btn" @click="$router.push('/fault/edit/'+$route.params.id)" v-if="item?.id">编辑</button>
+          <button class="detail-action-btn" @click="exportPDF">导出PDF</button>
         </div>
+      </div>
+      <div class="detail-section detail-title-section">
+        <h2 class="detail-title">{{ item?.title || '加载中...' }}</h2>
       </div>
 
       <div v-if="item?.category" class="detail-section"><div class="detail-label">分类</div><div class="detail-value">{{ item.category }}</div></div>
@@ -48,6 +52,8 @@
           <div v-else class="detail-value text-slate-400">暂无附件</div>
         </div>
 
+        <LearningNotes :targetId="$route.params.id" />
+
         <div class="detail-footer">
           <span class="tag-time">{{ formatTime(item.createdAt) }}</span>
           <span class="tag-cat">{{ item.category }}</span>
@@ -58,15 +64,21 @@
     <div v-if="previewImage" class="image-overlay" @click="previewImage = null">
       <img :src="previewImage" class="image-preview-large">
     </div>
+    <RelatedPanel :api-list="apiFaults.list" :current-id="route.params.id" :current-cat="item?.cat" base-path="/fault" />
+    </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import { apiFaults, formatTime } from '../../api/index.js'
+import RelatedPanel from '../../components/RelatedPanel.vue'
+import LearningNotes from '../../components/LearningNotes.vue'
+import FavoriteButton from '../../components/FavoriteButton.vue'
 import { exportPdf } from '../../utils/pdfExport.js'
+import { recordView } from '../../utils/userLibrary.js'
 
 const route = useRoute()
 const item = ref(null)
@@ -104,16 +116,20 @@ async function exportPDF() {
   }, item.value?.title || '网络故障')
 }
 
-onMounted(async () => {
+async function loadDetail(id) {
+  loading.value = true; error.value = ''
   try {
-    const res = await apiFaults.get(route.params.id)
+    const res = await apiFaults.get(id)
     item.value = res.data
+    recordView('fault', item.value)
     if (item.value) {
       document.title = item.value.title + ' - IT运维学习平台'
     }
   } catch (e) { error.value = '加载失败: ' + e.message }
   finally { loading.value = false }
-})
+}
+watch(() => route.params.id, (id) => { if (id) loadDetail(id) })
+onMounted(() => { loadDetail(route.params.id) })
 </script>
 
 <style scoped>
@@ -148,4 +164,5 @@ onMounted(async () => {
 .file-meta{font-size:12px;color:#94a3b8;margin-top:2px}
 .file-download-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0}
 .file-download-btn:hover{background:#1d4ed8}
+
 </style>

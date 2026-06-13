@@ -1,13 +1,11 @@
 <template>
-  <div class="relative" ref="wrapper">
-    <div class="flex">
-      <input :value="modelValue" @input="onInput" @focus="onFocus" @keydown="onKeydown"
-        :placeholder="placeholder"
-        class="combo-input" :class="{ 'combo-input-open': show }">
-      <button class="combo-btn" :class="{ 'combo-btn-open': show }" @click="show = !show" tabindex="-1">
-        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M2 2l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
+  <div class="combo-wrapper" ref="wrapper">
+    <input :value="modelValue" @input="onInput" @focus="onFocus" @keydown="onKeydown"
+      :placeholder="placeholder"
+      class="combo-input" :class="{ 'combo-input-open': show }">
+    <button class="combo-btn" :class="{ 'combo-btn-open': show }" @click="show = !show" tabindex="-1">
+      <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M2 2l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <transition name="combo-drop">
       <div v-if="show" class="combo-dropdown">
         <div v-if="filteredOptions.length > 0" class="combo-options-list">
@@ -141,33 +139,36 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
 </script>
 
 <style scoped>
+.combo-wrapper{position:relative;width:100%}
 .combo-input{
-  flex:1;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:8px 0 0 8px;font-size:15px;outline:none;
-  background:#fff;transition:all .2s ease;font-family:inherit
+  width:100%;padding:10px 38px 10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;outline:none;
+  background:#fff;transition:all .18s ease;font-family:inherit;font-weight:500;line-height:1.4;
+  box-sizing:border-box
 }
-.combo-input:hover{border-color:#cbd5e1}
-.combo-input:focus,.combo-input-open{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12);z-index:1;position:relative}
-.combo-input-open{border-radius:8px 0 0 0;border-bottom-color:transparent}
+.combo-input:hover{border-color:#1e40af}
+.combo-input:focus,.combo-input-open{border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.12)}
+.combo-input-open{border-radius:8px 8px 0 0;border-bottom-color:transparent}
 .combo-btn{
-  width:38px;border:1.5px solid #e2e8f0;border-left:none;border-radius:0 8px 8px 0;
-  background:#f8fafc;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:#64748b;transition:all .15s ease;flex-shrink:0
+  position:absolute;right:0;top:0;bottom:0;width:38px;border:none;border-radius:0 8px 8px 0;
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#999;transition:all .18s ease
 }
-.combo-btn:hover{background:#eff6ff;color:#2563eb}
-.combo-btn-open{border-color:#2563eb;background:#eff6ff;color:#2563eb;border-radius:0 8px 0 0;border-bottom-color:transparent}
+.combo-btn:hover{color:#1e40af}
+.combo-btn-open{border-radius:0 8px 0 0;color:#1e40af}
 .combo-dropdown{
-  position:absolute;top:100%;left:0;right:0;z-index:100;
-  background:#fff;border:1.5px solid #2563eb;border-top:none;border-radius:0 0 8px 8px;
-  box-shadow:0 8px 24px rgba(37,99,235,.12);overflow:hidden
+  position:absolute;top:calc(100% - 1px);left:0;right:0;z-index:2000;
+  background:#fff;border:1.5px solid #1e40af;border-top:none;border-radius:0 0 8px 8px;
+  box-shadow:0 8px 24px rgba(30,64,175,.12);overflow:hidden
 }
-.combo-options-list{max-height:200px;overflow-y:auto}
+.combo-options-list{max-height:200px;overflow-y:auto;padding:4px 0}
 .combo-empty{padding:12px 16px;font-size:14px;color:#94a3b8;text-align:center}
 .combo-option{
-  padding:10px 12px;font-size:14px;cursor:pointer;color:#334155;
-  transition:all .15s ease;display:flex;align-items:center;gap:4px
+  width:100%;display:flex;align-items:center;gap:8px;padding:9px 14px;border:none;border-radius:0;
+  background:transparent;color:#000;font-size:14px;line-height:1.35;text-align:left;cursor:pointer;
+  transition:background .14s ease,color .14s ease
 }
-.combo-option:hover{background:#eff6ff;color:#2563eb}
-.combo-option-active{background:#eff6ff;color:#2563eb;font-weight:600}
+.combo-option:hover{background:#eff6ff;color:#1e40af}
+.combo-option-active{background:#2563eb;color:#fff;font-weight:600}
 .combo-opt-btn{
   width:24px;height:24px;border:none;border-radius:4px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
@@ -175,7 +176,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
 }
 .combo-option:hover .combo-opt-btn{opacity:1}
 .combo-opt-edit{color:#64748b}
-.combo-opt-edit:hover{background:#dbeafe;color:#2563eb}
+.combo-opt-edit:hover{background:#dbeafe;color:#1e40af}
 .combo-opt-del{color:#64748b}
 .combo-opt-del:hover{background:#fee2e2;color:#dc2626}
 .combo-manage-bar{
@@ -187,23 +188,23 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
   border-radius:6px;background:transparent;color:#64748b;font-size:13px;cursor:pointer;
   transition:all .15s ease;width:100%;justify-content:center
 }
-.combo-add-btn:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff}
+.combo-add-btn:hover{border-color:#1e40af;color:#1e40af;background:#eff6ff}
 .combo-edit-input{
-  flex:1;padding:5px 8px;border:1.5px solid #e2e8f0;border-radius:4px;font-size:13px;
+  flex:1;padding:5px 8px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;
   outline:none;min-width:0
 }
-.combo-edit-input:focus{border-color:#2563eb}
+.combo-edit-input:focus{border-color:#1e40af}
 .combo-edit-save{
-  padding:5px 10px;border:none;border-radius:4px;background:#2563eb;color:#fff;
+  padding:5px 10px;border:none;border-radius:6px;background:#1e40af;color:#fff;
   font-size:13px;cursor:pointer;white-space:nowrap
 }
-.combo-edit-save:hover{background:#1d4ed8}
+.combo-edit-save:hover{background:#1e3a8a}
 .combo-edit-cancel{
-  padding:5px 10px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;
-  color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap
+  padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;
+  color:#334155;font-size:13px;cursor:pointer;white-space:nowrap
 }
-.combo-edit-cancel:hover{border-color:#94a3b8;color:#334155}
-.combo-drop-enter-active{transition:all .15s ease}
+.combo-edit-cancel:hover{border-color:#1e40af;color:#1e40af}
+.combo-drop-enter-active{transition:all .14s ease}
 .combo-drop-leave-active{transition:all .1s ease}
 .combo-drop-enter-from{opacity:0;transform:translateY(-4px)}
 .combo-drop-leave-to{opacity:0;transform:translateY(-4px)}

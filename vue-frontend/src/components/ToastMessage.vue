@@ -3,7 +3,7 @@
     <div v-if="visible" class="fixed bottom-7 right-7 z-[999] px-6 py-3.5 rounded-lg shadow-lg text-sm font-medium border-l-4 border-orange-500 animate-toast"
          style="background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff">
       {{ message }}
-      <button class="absolute -top-1 -right-1 bg-slate-600/80 text-white border-none rounded-full w-5 h-5 text-xs leading-none cursor-pointer hover:bg-slate-500" @click="$emit('close')">&times;</button>
+      <button class="toast-close" @click="$emit('close')">&times;</button>
     </div>
   </Teleport>
 </template>

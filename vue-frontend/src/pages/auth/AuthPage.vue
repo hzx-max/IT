@@ -5,7 +5,7 @@
     <div class="auth-card" :class="mode === 'login' ? 'panel-right' : 'panel-left'">
       <!-- 注册表单（在左半边） -->
       <div class="form-container sign-up-container">
-        <div class="form-inner" :inert="mode !== 'register'">
+        <div class="form-inner" :class="{ 'form-visible': mode === 'register', 'form-hidden': mode !== 'register' }">
           <h1 class="form-title">创建账号</h1>
 
           <div class="form-field" :class="{ 'field-taken': regUsernameStatus === 'taken', 'field-available': regUsernameStatus === 'available' }">
@@ -49,7 +49,7 @@
 
       <!-- 登录表单（在右半边） -->
       <div class="form-container sign-in-container">
-        <div class="form-inner" :inert="mode !== 'login'">
+        <div class="form-inner" :class="{ 'form-visible': mode === 'login', 'form-hidden': mode !== 'login' }">
           <h1 class="form-title">登录</h1>
 
           <div class="form-field">
@@ -114,19 +114,25 @@ import { apiAuth } from '../../api/index.js'
 const route = useRoute()
 const router = useRouter()
 
-const mode = ref('login')
+const mode = ref(route.path === '/register' ? 'register' : 'login')
+
+function routeMode(path) {
+  return path === '/register' ? 'register' : 'login'
+}
 
 function syncMode() {
-  mode.value = route.path === '/register' ? 'register' : 'login'
+  mode.value = routeMode(route.path)
 }
 
 function switchTo(target) {
-  if (target === 'login') router.push('/login')
-  else router.push('/register')
+  if (target === mode.value) return
+  const targetPath = target === 'login' ? '/login' : '/register'
+  mode.value = target
+  if (route.path !== targetPath) router.push(targetPath)
 }
 
 onMounted(syncMode)
-watch(() => route.path, syncMode)
+watch(() => route.path, (path) => { mode.value = routeMode(path) })
 
 // 登录
 const loginUsername = ref('')
@@ -289,7 +295,7 @@ async function onRegister() {
 .auth-bg {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 30%, #f5f3ff 60%, #fef3c7 100%);
+  background: #fff;
   z-index: 0;
 }
 .auth-bg::before {
@@ -299,7 +305,7 @@ async function onRegister() {
   right: -30%;
   width: 80%;
   height: 80%;
-  background: radial-gradient(circle, rgba(37, 99, 235, .08) 0%, transparent 70%);
+  background: transparent;
   border-radius: 50%;
 }
 .auth-bg::after {
@@ -309,7 +315,7 @@ async function onRegister() {
   left: -20%;
   width: 60%;
   height: 60%;
-  background: radial-gradient(circle, rgba(124, 58, 237, .06) 0%, transparent 70%);
+  background: transparent;
   border-radius: 50%;
 }
 
@@ -324,19 +330,19 @@ async function onRegister() {
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #1e293b;
+  color: #fff;
   font-weight: 700;
   font-size: 16px;
   letter-spacing: -.3px;
   padding: 8px 14px;
-  background: rgba(255, 255, 255, .75);
+  background: #2563eb;
   backdrop-filter: blur(8px);
   border-radius: 10px;
-  border: 1px solid rgba(226, 232, 240, .6);
+  border: 1px solid #2563eb;
   transition: all .2s;
 }
 .brand:hover {
-  background: #fff;
+  background: #1d4ed8;
   color: #2563eb;
   transform: translateY(-1px);
 }
@@ -353,6 +359,9 @@ async function onRegister() {
   box-shadow: 0 20px 60px rgba(15, 23, 42, .12), 0 2px 6px rgba(15, 23, 42, .04);
   overflow: hidden;
 }
+.auth-card::after {
+  display: none;
+}
 
 /* 两个表单容器（左右两半，叠加在一起） */
 .form-container {
@@ -364,8 +373,8 @@ async function onRegister() {
   align-items: center;
   justify-content: center;
   padding: 0 40px;
-  transition: transform .8s cubic-bezier(.65, 0, .35, 1), opacity .8s cubic-bezier(.65, 0, .35, 1);
-  will-change: transform, opacity;
+  transition: transform .7s cubic-bezier(.65, 0, .35, 1);
+  will-change: transform;
 }
 .sign-up-container { left: 0; }
 .sign-in-container { right: 0; }
@@ -376,8 +385,10 @@ async function onRegister() {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  transition: opacity .8s cubic-bezier(.65, 0, .35, 1);
+  transition: opacity .5s cubic-bezier(.65, 0, .35, 1), transform .5s cubic-bezier(.65, 0, .35, 1);
 }
+.form-hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+.form-visible { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
 
 .form-title {
   font-size: 26px;
@@ -534,7 +545,7 @@ async function onRegister() {
   width: 50%;
   height: 100%;
   overflow: hidden;
-  transition: transform .8s cubic-bezier(.65, 0, .35, 1);
+  transition: transform .7s cubic-bezier(.65, 0, .35, 1);
   z-index: 10;
   will-change: transform;
 }
@@ -547,9 +558,7 @@ async function onRegister() {
   height: 100%;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
   color: #fff;
-  transition: transform .8s cubic-bezier(.65, 0, .35, 1);
   display: flex;
-  will-change: transform;
 }
 .overlay::before {
   content: '';
@@ -607,12 +616,12 @@ async function onRegister() {
 }
 
 /* ───── 切换动画：登录状态 ───── */
-.auth-card.panel-right .sign-in-container { transform: translateX(0); opacity: 1; z-index: 5; }
-.auth-card.panel-right .sign-up-container { transform: translateX(30%); opacity: 0; z-index: 1; pointer-events: none; }
+.auth-card.panel-right .sign-in-container { z-index: 5; }
+.auth-card.panel-right .sign-up-container { z-index: 1; }
 
 /* ───── 切换动画：注册状态（默认） ───── */
-.auth-card.panel-left .sign-up-container { transform: translateX(0); opacity: 1; z-index: 5; }
-.auth-card.panel-left .sign-in-container { transform: translateX(-30%); opacity: 0; z-index: 1; pointer-events: none; }
+.auth-card.panel-left .sign-up-container { z-index: 5; }
+.auth-card.panel-left .sign-in-container { z-index: 1; }
 
 /* ───── 移动端 ───── */
 @media (max-width: 768px) {

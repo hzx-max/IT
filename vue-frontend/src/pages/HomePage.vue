@@ -1,6 +1,5 @@
 <template>
   <div class="home-page">
-    <div class="home-bg"></div>
 
     <!-- 右上角登录/退出 -->
     <div class="home-auth-bar">
@@ -11,11 +10,11 @@
           <span class="auth-role" :class="role === 'SUPER_ADMIN' ? 'role-super' : 'role-admin'">{{ role === 'SUPER_ADMIN' ? '超级管理员' : '管理员' }}</span>
         </span>
         <router-link v-if="role === 'SUPER_ADMIN'" to="/super-admin" class="auth-btn auth-btn-admin">管理员管理</router-link>
-        <button class="auth-btn auth-btn-outline" @click="onLogout">退出登录</button>
+        <button class="auth-btn auth-btn-outline btn-solid" @click="onLogout">退出登录</button>
       </template>
       <template v-else>
         <router-link to="/login" class="auth-btn auth-btn-primary">管理员登录</router-link>
-        <router-link to="/register" class="auth-btn auth-btn-outline">注册管理员</router-link>
+        <router-link to="/register" class="auth-btn auth-btn-primary">注册管理员</router-link>
       </template>
     </div>
 
@@ -256,9 +255,6 @@ onUnmounted(() => {
 
 <style scoped>
 .home-page{min-height:100vh;position:relative;overflow:hidden}
-.home-bg{position:fixed;inset:0;background:linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 30%,#f5f3ff 60%,#fef3c7 100%);z-index:0}
-.home-bg::before{content:'';position:absolute;top:-50%;right:-30%;width:80%;height:80%;background:radial-gradient(circle,rgba(37,99,235,.06) 0%,transparent 70%);border-radius:50%}
-.home-bg::after{content:'';position:absolute;bottom:-30%;left:-20%;width:60%;height:60%;background:radial-gradient(circle,rgba(124,58,237,.05) 0%,transparent 70%);border-radius:50%}
 .home-content{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:60px 24px 40px}
 .home-header{text-align:center;margin-bottom:56px}
 .home-title{font-size:40px;font-weight:800;color:#0f172a;margin:20px 0 12px;letter-spacing:-.5px}
@@ -276,8 +272,8 @@ onUnmounted(() => {
 .auth-btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
 .auth-btn-outline{background:#fff;color:#2563eb;border-color:#2563eb}
 .auth-btn-outline:hover{background:#2563eb;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.2)}
-.auth-btn-admin{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:#7c3aed}
-.auth-btn-admin:hover{background:linear-gradient(135deg,#6d28d9,#5b21b6);box-shadow:0 4px 12px rgba(124,58,237,.35)}
+.auth-btn-admin{background:#2563eb;color:#fff;border-color:#2563eb}
+.auth-btn-admin:hover{background:#1d4ed8;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.3)}
 .home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:60px}
 .home-card{background:#fff;border-radius:16px;padding:28px 24px;border:1.5px solid #e2e8f0;cursor:pointer;transition:all .35s ease;text-decoration:none;position:relative;overflow:hidden}
 .home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--orange));opacity:0;transition:opacity .3s ease}
@@ -321,10 +317,10 @@ onUnmounted(() => {
 .top10-list{display:flex;flex-direction:column;gap:6px}
 .top10-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#f8fafc;transition:background .2s;text-decoration:none}
 .top10-row:hover{background:#eff6ff}
-.top10-rank{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#94a3b8;flex-shrink:0}
-.top10-rank.rank-1{background:linear-gradient(135deg,#f59e0b,#d97706)}
-.top10-rank.rank-2{background:linear-gradient(135deg,#94a3b8,#64748b)}
-.top10-rank.rank-3{background:linear-gradient(135deg,#cd7836,#a0522d)}
+.top10-rank{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;background:#94a3b8;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.top10-rank.rank-1{background:linear-gradient(135deg,#ffd700,#f0a500);color:#7c5800;box-shadow:0 2px 6px rgba(255,215,0,.4)}
+.top10-rank.rank-2{background:linear-gradient(135deg,#e8e8e8,#b8b8b8);color:#555;box-shadow:0 2px 6px rgba(180,180,180,.4)}
+.top10-rank.rank-3{background:linear-gradient(135deg,#cd7f32,#a0522d);color:#fff;box-shadow:0 2px 6px rgba(205,127,50,.4)}
 .top10-title{flex:1;font-size:13px;color:#0f172a;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top10-count{font-size:12px;color:#64748b;font-weight:600;flex-shrink:0}
 .chart-empty{text-align:center;padding:20px 0;color:#94a3b8;font-size:13px}

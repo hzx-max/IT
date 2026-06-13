@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -64,7 +64,7 @@
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '更新' }}
           </button>
-          <button class="btn btn-ghost" @click="$router.back()">取消</button>
+          <button class="btn btn-primary" @click="$router.back()">取消</button>
         </div>
 
         <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">{{ error }}</div>
@@ -196,7 +196,7 @@ async function onSubmit() {
 .form-group label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:15px;outline:none;font-family:inherit;background:var(--bg-white);transition:var(--transition-normal)}
 .form-input:hover{border-color:#cbd5e1}
-.form-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.form-input:focus{border-color:#1e40af;box-shadow:0 0 0 3px rgba(30,64,175,.12)}
 .form-input.font-mono{font-family:'Cascadia Code','Fira Code',Consolas,monospace;line-height:1.6}
 .upload-area{border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8}
 .upload-area:hover{border-color:#7c3aed;color:#7c3aed;background:#f8fafc}

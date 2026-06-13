@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MainLayout>
     <div class="max-w-[720px] mx-auto">
       <div class="top-bar">
@@ -15,10 +15,7 @@
 
         <div class="form-group">
           <label>分类 <span class="text-red-600">*</span></label>
-          <select v-model="form.category" class="form-input">
-            <option value="">选择分类</option>
-            <option v-for="cat in CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
+          <DropdownSelect v-model="form.category" :options="categoryOptions" placeholder="选择分类" />
         </div>
 
         <div class="form-group">
@@ -52,7 +49,7 @@
           <button class="btn btn-primary" @click="onSubmit" :disabled="submitting">
             {{ submitting ? '提交中...' : '更新' }}
           </button>
-          <button class="btn btn-ghost" @click="$router.back()">取消</button>
+          <button class="btn btn-primary" @click="$router.back()">取消</button>
         </div>
 
         <div v-if="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">{{ error }}</div>
@@ -64,14 +61,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '../../layouts/MainLayout.vue'
 import ModalDialog from '../../components/ModalDialog.vue'
+import DropdownSelect from '../../components/DropdownSelect.vue'
 import { apiDesktop, apiUpload } from '../../api/index.js'
 import { submitWithApproval } from '../../api/approval.js'
 
 const CATEGORIES = ['系统设置', '软件安装', '硬件驱动', '网络设置', '安全防护']
+const categoryOptions = computed(() => CATEGORIES.map(c => ({ value: c, label: c })))
 
 const route = useRoute()
 const router = useRouter()
@@ -176,7 +175,7 @@ async function onSubmit() {
 .form-group label{display:block;font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:15px;outline:none;font-family:inherit;background:var(--bg-white);transition:var(--transition-normal)}
 .form-input:hover{border-color:#cbd5e1}
-.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(30,64,175,.12)}
 .upload-area{border:2px dashed #cbd5e1;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:8px;color:#94a3b8}
 .upload-area:hover{border-color:#2563eb;color:#2563eb;background:#f8fafc}
 .upload-text{font-size:14px}
