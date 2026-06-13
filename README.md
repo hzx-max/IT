@@ -276,7 +276,7 @@ vue-frontend/src/
 │   └── auth.js          # 权限状态管理（Token、用户名、角色）
 ├── utils/
 │   ├── pdfExport.js     # PDF 导出引擎（html2canvas + html2pdf）
-│   └── userLibrary.js   # 本地浏览历史与收藏（localStorage）
+│   └── userLibrary.js   # 收藏（API 持久化）/ 浏览历史（localStorage）
 ├── App.vue              # 根组件（Token 校验 + 全局快捷键）
 └── main.js              # 入口
 ```
@@ -297,7 +297,7 @@ vue-frontend/src/
 | FileUploader | `FileUploader.vue` | 287 | 拖拽文件上传（50+ 扩展名，10 种类型图标） |
 | RelatedPanel | `RelatedPanel.vue` | 300 | 同类别内容浮动面板（可拖拽切换左/右/收起） |
 | LearningNotes | `LearningNotes.vue` | 385 | 评论系统（点赞/回复/排序/审核） |
-| FavoriteButton | `FavoriteButton.vue` | 44 | 收藏按钮（localStorage） |
+| FavoriteButton | `FavoriteButton.vue` | 44 | 收藏按钮（后端 API 持久化，游客回退 localStorage） |
 
 ### 路由结构
 
@@ -349,7 +349,7 @@ springboot-backend/src/main/java/com/netconfig/
 │   ├── SecurityConfig.java         # BCrypt PasswordEncoder bean
 │   ├── SpaForwardController.java   # SPA 路由转发
 │   └── WebConfig.java              # Web MVC 配置（拦截器注册、静态资源）
-├── controller/                     # 控制器（14 个文件）
+├── controller/                     # 控制器（15 个文件）
 │   ├── AuthController.java         # 认证接口（登录/注册/用户管理）
 │   ├── CommandController.java      # 网络命令 CRUD
 │   ├── DesktopController.java      # 桌面运维 CRUD
@@ -363,6 +363,7 @@ springboot-backend/src/main/java/com/netconfig/
 │   ├── CategoryController.java     # 分类标签管理
 │   ├── SearchHistoryController.java# 搜索历史管理
 │   ├── PendingChangeController.java# 审核变更流程
+│   ├── FavoriteController.java     # 收藏管理（toggle/check/list）
 │   └── UserProfileController.java  # 用户资料管理
 ├── dto/                            # 数据传输对象（7 个文件）
 │   ├── ApiResponse.java            # 通用响应包装 {ok, data, error}
@@ -389,10 +390,11 @@ springboot-backend/src/main/java/com/netconfig/
 │   ├── SearchHistory.java          # 搜索历史表
 │   ├── PendingChange.java          # 待审核变更表
 │   ├── CategoryLabel.java          # 分类标签表
+│   ├── Favorite.java               # 收藏记录表
 │   └── CategoryExclusion.java      # 分类排除表
-├── repository/                     # 数据仓库（17 个文件）
+├── repository/                     # 数据仓库（18 个文件）
 │   └── (每个 Entity 对应一个 Repository，继承 JpaRepository)
-└── service/                        # 服务层（11 个文件）
+└── service/                        # 服务层（12 个文件）
     ├── AuthService.java            # 认证逻辑（注册/登录/Token 管理）
     ├── CommandService.java         # 命令主题业务（级联操作）
     ├── DesktopService.java         # 桌面运维业务
@@ -403,6 +405,7 @@ springboot-backend/src/main/java/com/netconfig/
     ├── LearningNoteService.java    # 笔记业务（点赞/回复/CRUD）
     ├── NoteModerationService.java  # 笔记内容审核（违禁词、正则、长度）
     ├── UserProfileService.java     # 用户资料业务
+    ├── FavoriteService.java        # 收藏业务（toggle/check/list）
     └── JsonUtil.java               # JSON 工具 + 时间工具
 ```
 
@@ -474,13 +477,16 @@ springboot-backend/src/main/java/com/netconfig/
 | GET | `/api/admin/pending-changes` | 获取待审核列表（SUPER_ADMIN） |
 | POST | `/api/admin/pending-change/{id}/approve` | 批准变更（SUPER_ADMIN） |
 | POST | `/api/admin/pending-change/{id}/reject` | 拒绝变更（SUPER_ADMIN） |
+| GET | `/api/favorites` | 获取收藏列表（登录） |
+| POST | `/api/favorites/toggle` | 切换收藏/取消收藏（登录） |
+| POST | `/api/favorites/check` | 检查是否已收藏（登录） |
 | GET/POST | `/api/profile/**` | 用户个人资料 |
 
 ---
 
 ## 数据库
 
-### 表结构（共 16 张表）
+### 表结构（共 18 张表）
 
 | 表名 | 实体 | 说明 |
 |------|------|------|
@@ -496,6 +502,7 @@ springboot-backend/src/main/java/com/netconfig/
 | `ai_topics` | `AiTopic` | AI 主题条目 |
 | `learning_notes` | `LearningNote` | 学习笔记/评论（id, targetId, username, content, likeCount, dislikeCount, parentId, createdAt） |
 | `note_reactions` | `NoteReaction` | 笔记点赞/点踩记录（noteId, userId, reactionType） |
+| `favorites` | `Favorite` | 收藏记录（userId, module, itemId, itemTitle, moduleLabel, description, category, itemPath, createdAt） |
 | `click_records` | `ClickRecord` | 点击统计（module, itemId, itemTitle, count） |
 | `search_history` | `SearchHistory` | 搜索历史（module, keyword, searchedAt） |
 | `pending_changes` | `PendingChange` | 待审核变更（module, operation, entityId, payload, submitter, status） |
@@ -594,7 +601,7 @@ Props 向下传递 + Events 向上冒泡
 全局状态：
   stores/auth.js          → 认证状态（Token/用户名/角色）
   composables/useSidebarCollapse.js → 侧边栏状态（折叠/位置，localStorage 持久化）
-  utils/userLibrary.js    → 浏览历史与收藏（localStorage 持久化，跨组件事件通知）
+  utils/userLibrary.js    → 收藏（API 持久化，登录用户）/ 浏览历史（localStorage，跨组件事件通知）
 ```
 
 ### 后端关键设计
@@ -707,12 +714,12 @@ Invoke-WebRequest -Uri http://localhost:3000
 
 | 维度 | 数据 |
 |------|------|
-| 后端 Java 源码文件 | 51 个 |
+| 后端 Java 源码文件 | 54 个 |
 | 前端 Vue/JS 源码文件 | 58 个 |
-| 数据库表 | 17 张 |
+| 数据库表 | 18 张 |
 | 前端共享组件 | 13 个 |
 | 页面组件 | 30 个 |
-| RESTful API 端点 | 50+ 个 |
+| RESTful API 端点 | 55+ 个 |
 | 路由 | 31 条 |
 
 ---
@@ -725,4 +732,4 @@ Private & Internal Use Only.
 
 ## 最后更新
 
-2026-06-13
+2026-06-13（v2.0 — 收藏功能数据库持久化）

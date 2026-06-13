@@ -461,6 +461,17 @@
 
 
 ======== 2026-06-13 15:30:00 ========
-�����ˣ�AI��opencode��
-�޸����ݣ���12��Add/Editҳ���ȡ����ť��ʽ��btn-ghost��Ϊbtn-primary��ʹ���뱣�水ť������ͬ����ɫ�������
-Ӱ�췶Χ��CmdAdd/CmdEdit, DesktopAdd/DesktopEdit, FaultAdd/FaultEdit, LinuxAdd/LinuxEdit, OfficeAdd/OfficeEdit, AiAdd/AiEdit����12��ҳ���ȡ����ť�Ӿ���ʽ��
+�����ˣ�AI��opencode��
+�޸����ݣ���12��Add/Editҳ���ȡ����ť��ʽ��btn-ghost��Ϊbtn-primary��ʹ���뱣�水ť������ͬ����ɫ�������
+Ӱ�췶Χ��CmdAdd/CmdEdit, DesktopAdd/DesktopEdit, FaultAdd/FaultEdit, LinuxAdd/LinuxEdit, OfficeAdd/OfficeEdit, AiAdd/AiEdit����12��ҳ���ȡ����ť�Ӿ���ʽ��
+
+======= 2026-06-13 18:50:00 ========
+操作人：AI（opencode）
+修改内容：收藏功能实现后端数据库持久化
+- 后端：新增 Favorite 实体、favorites 表（userId/module/itemId 唯一约束）
+- 后端：新增 FavoriteRepository / FavoriteService / FavoriteController
+- 后端：AuthInterceptor 放行 /api/favorites（允许所有登录用户）
+- 前端：api/modules.js 新增 apiFavorites 接口
+- 前端：userLibrary.js 改为异步，登录用户走 API，游客回退 localStorage
+- 前端：FavoriteButton.vue / ProfilePage.vue 适配 async
+影响范围：所有收藏相关页面，新增 favorites 数据库表

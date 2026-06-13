@@ -25,13 +25,13 @@ const props = defineProps({
 
 const active = ref(false)
 
-function sync() {
-  active.value = !!props.item?.id && isFavorite(props.module, props.item.id)
+async function sync() {
+  active.value = !!props.item?.id && await isFavorite(props.module, props.item.id)
 }
 
-function toggle() {
+async function toggle() {
   if (!props.item?.id) return
-  active.value = toggleFavorite(props.module, props.item)
+  active.value = await toggleFavorite(props.module, props.item)
 }
 
 watch(() => [props.module, props.item?.id], sync, { immediate: true })

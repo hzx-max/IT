@@ -113,6 +113,12 @@ export const apiProfile = {
   update: (data) => http.post('/profile/update', data)
 }
 
+export const apiFavorites = {
+  list: () => http.get('/favorites'),
+  check: (module, itemId) => http.post('/favorites/check', { module, itemId }),
+  toggle: (data) => http.post('/favorites/toggle', data)
+}
+
 export const apiClicks = {
   record: (module, itemId, itemTitle) => http.post('/clicks/record', { module, itemId, itemTitle }),
   stats: () => http.get('/clicks/stats'),

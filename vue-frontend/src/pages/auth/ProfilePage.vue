@@ -294,9 +294,9 @@ function showMsg(text, type) {
   setTimeout(() => { msg.value = '' }, 3000)
 }
 
-function refreshLibrary() {
+async function refreshLibrary() {
   historyItems.value = getHistory()
-  favoriteItems.value = getFavorites()
+  favoriteItems.value = await getFavorites()
 }
 
 function goLibraryItem(entry) {

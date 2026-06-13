@@ -61,6 +61,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 收藏接口 - 需要登录但允许所有角色
+        if (path.startsWith("/api/favorites")) {
+            return checkAuthForAllUsers(request, response);
+        }
+
         // 个人资料接口 - 需要登录但允许所有角色
         if (path.startsWith("/api/profile")) {
             return checkAuthForAllUsers(request, response);

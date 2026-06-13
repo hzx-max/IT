@@ -1,3 +1,5 @@
+import { apiFavorites } from '../api/modules.js'
+
 const HISTORY_LIMIT = 80
 
 export const MODULE_LABELS = {
@@ -7,6 +9,10 @@ export const MODULE_LABELS = {
   linux: 'Linux',
   office: 'Office',
   ai: 'AI运维'
+}
+
+function isLoggedIn() {
+  return !!localStorage.getItem('token')
 }
 
 function currentUserKey() {
@@ -64,21 +70,50 @@ export function getHistory() {
   return readList('history')
 }
 
-export function getFavorites() {
+export async function getFavorites() {
+  if (isLoggedIn()) {
+    try {
+      const res = await apiFavorites.list()
+      if (res.data?.success) return res.data.data || []
+    } catch {}
+  }
   return readList('favorites')
 }
 
-export function isFavorite(module, id) {
-  return getFavorites().some(i => i.module === module && String(i.id) === String(id))
+export async function isFavorite(module, id) {
+  if (isLoggedIn()) {
+    try {
+      const res = await apiFavorites.check(module, String(id))
+      if (res.data?.success) return !!res.data.data
+    } catch {}
+  }
+  return readList('favorites').some(i => i.module === module && String(i.id) === String(id))
 }
 
-export function toggleFavorite(module, item) {
+export async function toggleFavorite(module, item) {
   const entry = makeLibraryItem(module, item)
   if (!entry) return false
-  const exists = isFavorite(module, item.id)
+
+  if (isLoggedIn()) {
+    try {
+      const res = await apiFavorites.toggle({
+        module, itemId: String(item.id),
+        itemTitle: entry.title, moduleLabel: entry.moduleLabel,
+        description: entry.desc, category: entry.category,
+        itemPath: entry.path
+      })
+      if (res.data?.success) {
+        const added = res.data.data?.added
+        window.dispatchEvent(new CustomEvent('user-library-change', { detail: { type: 'favorites' } }))
+        return added
+      }
+    } catch {}
+  }
+
+  const exists = readList('favorites').some(i => i.module === module && String(i.id) === String(item.id))
   const list = exists
-    ? getFavorites().filter(i => !(i.module === module && String(i.id) === String(item.id)))
-    : [entry, ...getFavorites()]
+    ? readList('favorites').filter(i => !(i.module === module && String(i.id) === String(item.id)))
+    : [entry, ...readList('favorites')]
   writeList('favorites', list)
   return !exists
 }
