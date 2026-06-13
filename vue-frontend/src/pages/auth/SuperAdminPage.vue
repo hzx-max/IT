@@ -758,13 +758,29 @@ onMounted(async () => {
 .super-btn:disabled,.super-btn-sm:disabled{opacity:.45;cursor:not-allowed}
 
 /* 移动端适配 */
-@media (max-width: 640px) {
-  .super-topbar{padding:0 16px}
-  .super-main{padding:24px 16px}
+@media (max-width: 768px) {
+  .super-page{overflow-x:hidden}
+  .super-topbar{height:auto;min-height:60px;padding:12px 16px;align-items:flex-start;gap:12px;flex-direction:column}
+  .super-brand{width:100%;justify-content:center}
+  .super-topbar-right{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .super-user-tag{grid-column:1 / -1;text-align:center}
+  .super-main{max-width:none;width:100%;padding:24px 14px}
+  .super-title{font-size:24px;line-height:1.3}
+  .super-card{padding:18px}
   .super-batch-bar{flex-direction:column;align-items:flex-start;gap:8px}
-  .super-batch-bar .super-batch-actions{width:100%;flex-wrap:wrap}
-  .super-list-item{flex-wrap:wrap;gap:8px}
+  .super-batch-bar .super-batch-actions{width:100%;display:grid;grid-template-columns:1fr;gap:8px}
+  .super-list-item{flex-wrap:wrap;gap:10px;align-items:flex-start}
+  .super-list-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
   .super-change-item .super-checkbox-inline{align-self:flex-start;margin-top:3px}
+  .super-detail-panel{padding:12px;overflow-x:auto}
+  .super-diff-row{flex-direction:column;gap:6px}
+  .super-diff-label{min-width:0}
+  .super-table{min-width:760px}
+}
+
+@media (max-width: 480px) {
+  .super-topbar-right{grid-template-columns:1fr}
+  .super-list-actions{grid-template-columns:1fr}
 }
 
 /* 空状态 */

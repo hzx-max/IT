@@ -494,11 +494,18 @@ onBeforeUnmount(() => {
 }
 @media (max-width:640px){
   .profile-content{width:calc(100vw - 32px);padding:20px 0}
-  .profile-header{flex-direction:column;align-items:center;text-align:center;padding-bottom:20px}
-  .profile-header-info{text-align:center;padding-right:0}
-  .profile-back-primary{position:static;align-self:center}
+  .profile-card{padding:18px}
+  .profile-header{flex-direction:column;align-items:center;text-align:center;padding-bottom:20px;margin-bottom:20px;gap:16px}
+  .profile-header-info{text-align:center;padding-right:0;width:100%}
+  .profile-header-info h2{font-size:22px}
+  .profile-back-primary{position:static;align-self:stretch;justify-content:center;min-height:44px}
   .form-row{flex-direction:column;gap:12px}
   .library-grid,.library-grid-full{grid-template-columns:1fr}
   .library-header{align-items:flex-start;flex-direction:column}
+  .library-header-actions{width:100%;flex-wrap:wrap}
+  .library-card{aspect-ratio:auto;min-height:190px}
+  .favorites-batch-bar{flex-direction:column;align-items:stretch}
+  .btn-batch-delete{min-height:42px}
+  .profile-toast{width:calc(100vw - 32px);text-align:center;white-space:normal}
 }
 </style>
