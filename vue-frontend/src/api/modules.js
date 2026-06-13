@@ -116,7 +116,8 @@ export const apiProfile = {
 export const apiFavorites = {
   list: () => http.get('/favorites'),
   check: (module, itemId) => http.post('/favorites/check', { module, itemId }),
-  toggle: (data) => http.post('/favorites/toggle', data)
+  toggle: (data) => http.post('/favorites/toggle', data),
+  batchDelete: (ids) => http.post('/favorites/batch-delete', { ids })
 }
 
 export const apiClicks = {

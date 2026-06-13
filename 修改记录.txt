@@ -475,3 +475,13 @@
 - 前端：userLibrary.js 改为异步，登录用户走 API，游客回退 localStorage
 - 前端：FavoriteButton.vue / ProfilePage.vue 适配 async
 影响范围：所有收藏相关页面，新增 favorites 数据库表
+
+======= 2026-06-13 19:05:00 ========
+操作人：AI（opencode）
+修改内容：收藏页面增加批量删除功能
+- 后端：FavoriteRepository 新增 findByIdIn 方法
+- 后端：FavoriteService 新增 deleteBatch（按用户过滤）
+- 后端：FavoriteController 新增 POST /api/favorites/batch-delete
+- 前端：apiFavorites 新增 batchDelete 接口
+- 前端：ProfilePage.vue 收藏卡片添加复选框、全选/取消全选、批量删除操作栏
+影响范围：个人中心收藏页面的批量操作 UI 和 API

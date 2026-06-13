@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
+    List<Favorite> findByIdIn(List<Long> ids);
     List<Favorite> findByUserIdOrderByCreatedAtDesc(String userId);
     Optional<Favorite> findByUserIdAndModuleAndItemId(String userId, String module, String itemId);
     boolean existsByUserIdAndModuleAndItemId(String userId, String module, String itemId);

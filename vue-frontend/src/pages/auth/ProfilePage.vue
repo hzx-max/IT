@@ -95,17 +95,61 @@
             <h3>收藏内容</h3>
             <div class="library-header-actions">
               <span>{{ favoriteItems.length }} 条</span>
-              <button v-if="favoriteItems.length > 5" class="library-more" type="button" @click="openLibrary('favorites')">更多</button>
+              <button class="library-more" type="button" @click="toggleSelectAllFavorites" v-if="favoriteItems.length">{{ allFavoritesSelected ? '取消全选' : '全选' }}</button>
+              <button v-if="favoriteItems.length > 5 && !selectedFavoriteIds.size" class="library-more" type="button" @click="openLibrary('favorites')">更多</button>
             </div>
           </div>
           <div v-if="favoriteItems.length" class="library-grid">
-            <button
+            <div
               v-for="entry in previewFavoriteItems"
               :key="'favorite-' + entry.module + '-' + entry.id"
-              class="library-card"
-              type="button"
-              @click="goLibraryItem(entry)"
+              class="library-card-wrap"
             >
+              <label class="favorite-checkbox" @click.stop :title="selectedFavoriteIds.has(entry.id) ? '取消选择' : '选择'">
+                <input type="checkbox" :checked="selectedFavoriteIds.has(entry.id)" @change="toggleFavoriteSelection(entry.id)" />
+                <span class="checkmark"></span>
+              </label>
+              <button class="library-card" type="button" @click="goLibraryItem(entry)">
+                <div class="library-card-top">
+                  <span class="library-module">{{ entry.moduleLabel }}</span>
+                  <span v-if="entry.category" class="library-category">{{ entry.category }}</span>
+                </div>
+                <h4>{{ entry.title }}</h4>
+                <p>{{ truncateText(entry.desc) || '暂无描述' }}</p>
+                <div class="library-meta">{{ formatLibraryTime(entry.savedAt) }}</div>
+              </button>
+            </div>
+          </div>
+          <div v-else class="library-empty">暂无收藏内容</div>
+          <div v-if="selectedFavoriteIds.size" class="favorites-batch-bar">
+            <span>已选择 {{ selectedFavoriteIds.size }} 项</span>
+            <button class="btn-batch-delete" :disabled="batchDeleting" @click="deleteSelectedFavorites">
+              {{ batchDeleting ? '删除中...' : '批量删除' }}
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="profile-card library-section library-full-section">
+        <div class="library-header">
+          <h3>{{ libraryMode === 'history' ? '历史查看记录' : '收藏内容' }}</h3>
+          <div class="library-header-actions">
+            <span>{{ currentLibraryItems.length }} 条</span>
+            <button v-if="libraryMode === 'favorites' && currentLibraryItems.length" class="library-more" type="button" @click="toggleSelectAllFavorites">{{ allFavoritesSelected ? '取消全选' : '全选' }}</button>
+            <button class="library-more" type="button" @click="openLibrary(null)">返回个人中心</button>
+          </div>
+        </div>
+        <div v-if="currentLibraryItems.length" class="library-grid library-grid-full">
+          <div
+            v-for="entry in currentLibraryItems"
+            :key="libraryMode + '-' + entry.module + '-' + entry.id"
+            class="library-card-wrap"
+          >
+            <label v-if="libraryMode === 'favorites'" class="favorite-checkbox" @click.stop :title="selectedFavoriteIds.has(entry.id) ? '取消选择' : '选择'">
+              <input type="checkbox" :checked="selectedFavoriteIds.has(entry.id)" @change="toggleFavoriteSelection(entry.id)" />
+              <span class="checkmark"></span>
+            </label>
+            <button class="library-card" type="button" @click="goLibraryItem(entry)">
               <div class="library-card-top">
                 <span class="library-module">{{ entry.moduleLabel }}</span>
                 <span v-if="entry.category" class="library-category">{{ entry.category }}</span>
@@ -115,36 +159,14 @@
               <div class="library-meta">{{ formatLibraryTime(entry.savedAt) }}</div>
             </button>
           </div>
-          <div v-else class="library-empty">暂无收藏内容</div>
-        </div>
-      </template>
-
-      <div v-else class="profile-card library-section library-full-section">
-        <div class="library-header">
-          <h3>{{ libraryMode === 'history' ? '历史查看记录' : '收藏内容' }}</h3>
-          <div class="library-header-actions">
-            <span>{{ currentLibraryItems.length }} 条</span>
-            <button class="library-more" type="button" @click="openLibrary(null)">返回个人中心</button>
-          </div>
-        </div>
-        <div v-if="currentLibraryItems.length" class="library-grid library-grid-full">
-          <button
-            v-for="entry in currentLibraryItems"
-            :key="libraryMode + '-' + entry.module + '-' + entry.id"
-            class="library-card"
-            type="button"
-            @click="goLibraryItem(entry)"
-          >
-            <div class="library-card-top">
-              <span class="library-module">{{ entry.moduleLabel }}</span>
-              <span v-if="entry.category" class="library-category">{{ entry.category }}</span>
-            </div>
-            <h4>{{ entry.title }}</h4>
-            <p>{{ truncateText(entry.desc) || '暂无描述' }}</p>
-            <div class="library-meta">{{ formatLibraryTime(entry.savedAt) }}</div>
-          </button>
         </div>
         <div v-else class="library-empty">{{ libraryMode === 'history' ? '暂无历史记录' : '暂无收藏内容' }}</div>
+        <div v-if="libraryMode === 'favorites' && selectedFavoriteIds.size" class="favorites-batch-bar">
+          <span>已选择 {{ selectedFavoriteIds.size }} 项</span>
+          <button class="btn-batch-delete" :disabled="batchDeleting" @click="deleteSelectedFavorites">
+            {{ batchDeleting ? '删除中...' : '批量删除' }}
+          </button>
+        </div>
       </div>
 
       <div v-if="msg" class="profile-toast" :class="msgType">{{ msg }}</div>
@@ -156,6 +178,7 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { http } from '../../api/index.js'
+import { apiFavorites } from '../../api/modules.js'
 import { getFavorites, getHistory } from '../../utils/userLibrary.js'
 
 const router = useRouter()
@@ -168,6 +191,8 @@ const msgType = ref('success')
 const fileInput = ref(null)
 const historyItems = ref([])
 const favoriteItems = ref([])
+const selectedFavoriteIds = ref(new Set())
+const batchDeleting = ref(false)
 
 const profile = reactive({
   realName: '', email: '', avatar: '', bio: ''
@@ -294,9 +319,48 @@ function showMsg(text, type) {
   setTimeout(() => { msg.value = '' }, 3000)
 }
 
+const allFavoritesSelected = computed(() => {
+  return favoriteItems.value.length > 0 && selectedFavoriteIds.value.size === favoriteItems.value.length
+})
+
+function toggleSelectAllFavorites() {
+  if (allFavoritesSelected.value) {
+    selectedFavoriteIds.value = new Set()
+  } else {
+    selectedFavoriteIds.value = new Set(favoriteItems.value.map(i => i.id))
+  }
+}
+
+function toggleFavoriteSelection(id) {
+  const next = new Set(selectedFavoriteIds.value)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
+  selectedFavoriteIds.value = next
+}
+
+async function deleteSelectedFavorites() {
+  const ids = [...selectedFavoriteIds.value]
+  if (!ids.length) return
+  batchDeleting.value = true
+  try {
+    await apiFavorites.batchDelete(ids)
+    selectedFavoriteIds.value = new Set()
+    await refreshLibrary()
+    showMsg(`已删除 ${ids.length} 条收藏`, 'success')
+  } catch (e) {
+    showMsg('批量删除失败', 'error')
+  } finally {
+    batchDeleting.value = false
+  }
+}
+
 async function refreshLibrary() {
   historyItems.value = getHistory()
   favoriteItems.value = await getFavorites()
+  selectedFavoriteIds.value = new Set()
 }
 
 function goLibraryItem(entry) {
@@ -404,6 +468,18 @@ onBeforeUnmount(() => {
 .library-card p{font-size:14px;line-height:1.6;color:#64748b;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .library-meta{margin-top:auto;padding-top:14px;font-size:12px;color:#94a3b8}
 .library-empty{height:96px;border:1.5px dashed #dbe3ef;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:14px;background:#f8fafc}
+
+.library-card-wrap{position:relative}
+.favorite-checkbox{position:absolute;top:8px;right:8px;z-index:2;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#fff;border:1.5px solid #cbd5e1;transition:all .15s}
+.favorite-checkbox:hover{border-color:#2563eb;background:#eff6ff}
+.favorite-checkbox input{position:absolute;opacity:0;width:0;height:0}
+.favorite-checkbox .checkmark{width:12px;height:12px;border-radius:2px;border:2px solid #94a3b8;transition:all .15s;display:block;box-sizing:border-box}
+.favorite-checkbox input:checked+.checkmark{background:#2563eb;border-color:#2563eb;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z'/%3E%3C/svg%3E");background-size:10px;background-position:center;background-repeat:no-repeat}
+
+.favorites-batch-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px 18px;background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:600;color:#0f172a}
+.btn-batch-delete{padding:8px 20px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-batch-delete:hover{background:#b91c1c}
+.btn-batch-delete:disabled{opacity:.5;cursor:not-allowed}
 
 .profile-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;z-index:100;white-space:nowrap}
 .profile-toast.success{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}

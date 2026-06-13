@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,6 +47,20 @@ public class FavoriteService {
             fav.setCreatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
             favoriteRepository.save(fav);
             return true; // added
+        }
+    }
+
+    @Transactional
+    public void deleteBatch(String userId, List<Long> ids) {
+        List<Favorite> toDelete = favoriteRepository.findByIdIn(ids);
+        List<Long> ownedIds = new ArrayList<>();
+        for (Favorite f : toDelete) {
+            if (userId.equals(f.getUserId())) {
+                ownedIds.add(f.getId());
+            }
+        }
+        if (!ownedIds.isEmpty()) {
+            favoriteRepository.deleteAllById(ownedIds);
         }
     }
 }

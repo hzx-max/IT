@@ -57,4 +57,19 @@ public class FavoriteController {
         );
         return ResponseEntity.ok(ApiResponse.success(Map.of("added", added)));
     }
+
+    @PostMapping("/batch-delete")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> batchDelete(@RequestBody Map<String, List<Long>> body,
+                                                                          HttpServletRequest request) {
+        String userId = (String) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("请先登录"));
+        }
+        List<Long> ids = body.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("请选择要删除的收藏"));
+        }
+        favoriteService.deleteBatch(userId, ids);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("deleted", ids.size())));
+    }
 }
