@@ -71,21 +71,21 @@
             </div>
           </div>
           <div v-if="historyItems.length" class="library-grid">
-            <button
+            <div
               v-for="entry in previewHistoryItems"
               :key="'history-' + entry.module + '-' + entry.id"
-              class="library-card"
-              type="button"
-              @click="goLibraryItem(entry)"
+              class="library-card-wrap"
             >
-              <div class="library-card-top">
-                <span class="library-module">{{ entry.moduleLabel }}</span>
-                <span v-if="entry.category" class="library-category">{{ entry.category }}</span>
-              </div>
-              <h4>{{ entry.title }}</h4>
-              <p>{{ truncateText(entry.desc) || '暂无描述' }}</p>
-              <div class="library-meta">{{ formatLibraryTime(entry.savedAt) }}</div>
-            </button>
+              <button class="library-card" type="button" @click="goLibraryItem(entry)">
+                <div class="library-card-top">
+                  <span class="library-module">{{ entry.moduleLabel }}</span>
+                  <span v-if="entry.category" class="library-category">{{ entry.category }}</span>
+                </div>
+                <h4>{{ entry.title }}</h4>
+                <p>{{ truncateText(entry.desc) || '暂无描述' }}</p>
+                <div class="library-meta">{{ formatLibraryTime(entry.savedAt) }}</div>
+              </button>
+            </div>
           </div>
           <div v-else class="library-empty">暂无历史记录</div>
         </div>
@@ -331,16 +331,6 @@ function toggleSelectAllFavorites() {
   }
 }
 
-function toggleFavoriteSelection(id) {
-  const next = new Set(selectedFavoriteIds.value)
-  if (next.has(id)) {
-    next.delete(id)
-  } else {
-    next.add(id)
-  }
-  selectedFavoriteIds.value = next
-}
-
 async function deleteSelectedFavorites() {
   const ids = [...selectedFavoriteIds.value]
   if (!ids.length) return
@@ -456,9 +446,9 @@ onBeforeUnmount(() => {
 .library-header span{font-size:13px;color:#64748b;font-weight:600}
 .library-more{height:32px;padding:0 14px;border:1.5px solid #dbe3ef;border-radius:8px;background:#fff;color:#2563eb;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
 .library-more:hover{border-color:#2563eb;background:#eff6ff}
-.library-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.library-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;align-items:stretch}
 .library-grid-full{grid-template-columns:repeat(5,minmax(0,1fr))}
-.library-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;aspect-ratio:1.414 / 1;min-height:0;padding:18px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer;transition:all .2s ease;font-family:inherit;overflow:hidden}
+.library-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;aspect-ratio:1.414 / 1;min-height:180px;height:100%;padding:18px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer;transition:all .2s ease;font-family:inherit;overflow:hidden;box-sizing:border-box}
 .library-card:hover{border-color:#2563eb;box-shadow:0 10px 24px rgba(37,99,235,.12);transform:translateY(-1px)}
 .library-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .library-module,.library-category{display:inline-flex;align-items:center;max-width:100%;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
@@ -469,7 +459,7 @@ onBeforeUnmount(() => {
 .library-meta{margin-top:auto;padding-top:14px;font-size:12px;color:#94a3b8}
 .library-empty{height:96px;border:1.5px dashed #dbe3ef;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:14px;background:#f8fafc}
 
-.library-card-wrap{position:relative}
+.library-card-wrap{position:relative;height:100%}
 .favorite-checkbox{position:absolute;top:8px;right:8px;z-index:2;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#fff;border:1.5px solid #cbd5e1;transition:all .15s}
 .favorite-checkbox:hover{border-color:#2563eb;background:#eff6ff}
 .favorite-checkbox input{position:absolute;opacity:0;width:0;height:0}
@@ -503,7 +493,7 @@ onBeforeUnmount(() => {
   .library-grid,.library-grid-full{grid-template-columns:1fr}
   .library-header{align-items:flex-start;flex-direction:column}
   .library-header-actions{width:100%;flex-wrap:wrap}
-  .library-card{aspect-ratio:auto;min-height:190px}
+  .library-card{aspect-ratio:auto;min-height:190px;height:auto}
   .favorites-batch-bar{flex-direction:column;align-items:stretch}
   .btn-batch-delete{min-height:42px}
   .profile-toast{width:calc(100vw - 32px);text-align:center;white-space:normal}
