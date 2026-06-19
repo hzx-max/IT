@@ -67,7 +67,8 @@
             <h3>历史查看记录</h3>
             <div class="library-header-actions">
               <span>{{ historyItems.length }} 条</span>
-              <button v-if="historyItems.length > 5" class="library-more" type="button" @click="openLibrary('history')">更多</button>
+              <button class="library-more" type="button" @click="toggleSelectAllHistory" v-if="historyItems.length">{{ allHistorySelected ? '取消全选' : '全选' }}</button>
+              <button v-if="historyItems.length > 5 && !selectedHistoryKeys.size" class="library-more" type="button" @click="openLibrary('history')">更多</button>
             </div>
           </div>
           <div v-if="historyItems.length" class="library-grid">
@@ -76,6 +77,10 @@
               :key="'history-' + entry.module + '-' + entry.id"
               class="library-card-wrap"
             >
+              <label class="favorite-checkbox" @click.stop :title="selectedHistoryKeys.has(historyKey(entry)) ? '取消选择' : '选择'">
+                <input type="checkbox" :checked="selectedHistoryKeys.has(historyKey(entry))" @change="toggleHistorySelection(entry)" />
+                <span class="checkmark"></span>
+              </label>
               <button class="library-card" type="button" @click="goLibraryItem(entry)">
                 <div class="library-card-top">
                   <span class="library-module">{{ entry.moduleLabel }}</span>
@@ -88,6 +93,12 @@
             </div>
           </div>
           <div v-else class="library-empty">暂无历史记录</div>
+          <div v-if="selectedHistoryKeys.size" class="favorites-batch-bar">
+            <span>已选择 {{ selectedHistoryKeys.size }} 项</span>
+            <button class="btn-batch-delete" @click="deleteSelectedHistory">
+              删除所选
+            </button>
+          </div>
         </div>
 
         <div class="profile-card library-section">
@@ -135,7 +146,7 @@
           <h3>{{ libraryMode === 'history' ? '历史查看记录' : '收藏内容' }}</h3>
           <div class="library-header-actions">
             <span>{{ currentLibraryItems.length }} 条</span>
-            <button v-if="libraryMode === 'favorites' && currentLibraryItems.length" class="library-more" type="button" @click="toggleSelectAllFavorites">{{ allFavoritesSelected ? '取消全选' : '全选' }}</button>
+            <button v-if="currentLibraryItems.length" class="library-more" type="button" @click="libraryMode === 'history' ? toggleSelectAllHistory() : toggleSelectAllFavorites()">{{ (libraryMode === 'history' ? allHistorySelected : allFavoritesSelected) ? '取消全选' : '全选' }}</button>
             <button class="library-more" type="button" @click="openLibrary(null)">返回个人中心</button>
           </div>
         </div>
@@ -145,8 +156,11 @@
             :key="libraryMode + '-' + entry.module + '-' + entry.id"
             class="library-card-wrap"
           >
-            <label v-if="libraryMode === 'favorites'" class="favorite-checkbox" @click.stop :title="selectedFavoriteIds.has(entry.id) ? '取消选择' : '选择'">
-              <input type="checkbox" :checked="selectedFavoriteIds.has(entry.id)" @change="toggleFavoriteSelection(entry.id)" />
+            <label class="favorite-checkbox" @click.stop :title="(libraryMode === 'history' ? selectedHistoryKeys.has(historyKey(entry)) : selectedFavoriteIds.has(entry.id)) ? '取消选择' : '选择'">
+              <input type="checkbox"
+                :checked="libraryMode === 'history' ? selectedHistoryKeys.has(historyKey(entry)) : selectedFavoriteIds.has(entry.id)"
+                @change="libraryMode === 'history' ? toggleHistorySelection(entry) : toggleFavoriteSelection(entry.id)"
+              />
               <span class="checkmark"></span>
             </label>
             <button class="library-card" type="button" @click="goLibraryItem(entry)">
@@ -161,6 +175,10 @@
           </div>
         </div>
         <div v-else class="library-empty">{{ libraryMode === 'history' ? '暂无历史记录' : '暂无收藏内容' }}</div>
+        <div v-if="selectedHistoryKeys.size && libraryMode === 'history'" class="favorites-batch-bar">
+          <span>已选择 {{ selectedHistoryKeys.size }} 项</span>
+          <button class="btn-batch-delete" @click="deleteSelectedHistory">删除所选</button>
+        </div>
         <div v-if="libraryMode === 'favorites' && selectedFavoriteIds.size" class="favorites-batch-bar">
           <span>已选择 {{ selectedFavoriteIds.size }} 项</span>
           <button class="btn-batch-delete" :disabled="batchDeleting" @click="deleteSelectedFavorites">
@@ -191,8 +209,10 @@ const msgType = ref('success')
 const fileInput = ref(null)
 const historyItems = ref([])
 const favoriteItems = ref([])
+const selectedHistoryKeys = ref(new Set())
 const selectedFavoriteIds = ref(new Set())
 const batchDeleting = ref(false)
+const batchDeletingHistory = ref(false)
 
 const profile = reactive({
   realName: '', email: '', avatar: '', bio: ''
@@ -347,9 +367,49 @@ async function deleteSelectedFavorites() {
   }
 }
 
+function historyKey(entry) {
+  return entry.module + ':' + entry.id
+}
+
+const allHistorySelected = computed(() => {
+  return historyItems.value.length > 0 && selectedHistoryKeys.value.size === historyItems.value.length
+})
+
+function toggleSelectAllHistory() {
+  if (allHistorySelected.value) {
+    selectedHistoryKeys.value = new Set()
+  } else {
+    selectedHistoryKeys.value = new Set(historyItems.value.map(historyKey))
+  }
+}
+
+function toggleHistorySelection(entry) {
+  const key = historyKey(entry)
+  const next = new Set(selectedHistoryKeys.value)
+  if (next.has(key)) {
+    next.delete(key)
+  } else {
+    next.add(key)
+  }
+  selectedHistoryKeys.value = next
+}
+
+function deleteSelectedHistory() {
+  const keys = [...selectedHistoryKeys.value]
+  if (!keys.length) return
+  const remaining = historyItems.value.filter(e => !keys.includes(e.module + ':' + e.id))
+  const storageKey = 'itops:history:' + (localStorage.getItem('userId') || localStorage.getItem('username') || 'guest')
+  localStorage.setItem(storageKey, JSON.stringify(remaining))
+  window.dispatchEvent(new CustomEvent('user-library-change', { detail: { type: 'history' } }))
+  selectedHistoryKeys.value = new Set()
+  historyItems.value = remaining
+  showMsg(`已删除 ${keys.length} 条记录`, 'success')
+}
+
 async function refreshLibrary() {
   historyItems.value = getHistory()
   favoriteItems.value = await getFavorites()
+  selectedHistoryKeys.value = new Set()
   selectedFavoriteIds.value = new Set()
 }
 

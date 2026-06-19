@@ -488,12 +488,10 @@
 
 ======= 2026-06-19 20:30:00 ========
 操作人：AI（opencode）
-修改内容：修复历史查看记录详情页卡片渲染异常
-- ProfilePage.vue：历史记录卡片添加 library-card-wrap 包装，统一收藏卡片结构
-- ProfilePage.vue：.library-card 添加 height:100% 和 min-height:180px，确保高度一致
-- ProfilePage.vue：.library-card-wrap 添加 height:100%，确保填满网格单元
-- ProfilePage.vue：.library-grid 添加 align-items:stretch，确保同行卡片等高
-影响范围：个人中心历史记录和收藏内容的卡片布局
+修改内容：历史查看记录添加多选编辑功能，与收藏内容一致
+- 新增 selectedHistoryKeys / allHistorySelected / toggleSelectAllHistory / toggleHistorySelection / deleteSelectedHistory
+- 历史预览区和详情页添加复选框、全选按钮、批量删除操作栏
+影响范围：个人中心历史记录卡片多选编辑功能
 
 ======== 2026-06-13 22:34:33 ========
 操作人：AI（opencode）
